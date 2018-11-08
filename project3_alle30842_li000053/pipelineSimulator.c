@@ -133,7 +133,7 @@ void printstate(statetype *stateptr){
 	printf("\tpc %d\n", stateptr->pc);
 
 	printf("\tdata memory:\n");
-		for (i=0; i<stateptr->nummemory; i++) {
+		for (i=0; i<stateptr->numMemory; i++) {
 			printf("\t\tdatamem[ %d ] %d\n", i, stateptr->datamem[i]);
 		}
 
