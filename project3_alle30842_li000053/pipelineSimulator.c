@@ -263,7 +263,38 @@ int main(int argc, char** argv){
 		}
 		newstate = state;
 		newstate.cycles++;
-		
+
+
+		// typedef struct IFIDstruct{
+		// 	int instr;
+		// 	int pcplus1;
+		// } IFIDType;
+
+		// typedef struct IDEXstruct{
+		// 	int instr;
+		// 	int pcplus1;
+		// 	int readregA;
+		// 	int readregB;
+		// 	int offset;
+		// } IDEXType;
+
+		// typedef struct EXMEMstruct{
+		// 	int instr;
+		// 	int branchtarget;
+		// 	int aluresult;
+		// 	int readreg;
+		// } EXMEMType;
+
+		// typedef struct MEMWBstruct{
+		// 	int instr;
+		// 	int writedata;
+		// } MEMWBType;
+
+		// typedef struct WBENDstruct{
+		// 	int instr;
+		// 	int writedata;
+		// } WBENDType;
+
 		/*------------------ IF stage ----------------- */
 
 
