@@ -67,11 +67,12 @@ typedef struct statestruct{
 
 void printstate(statetype *stateptr);
 void printinstruction(int instr);
+int signExtend(int num);
 int field0(int instruction);
 int field1(int instruction);
 int field2(int instruction);
 int opcode(int instruction);
-int signExtend(int num);
+
 
 
 int field0(int instruction){
