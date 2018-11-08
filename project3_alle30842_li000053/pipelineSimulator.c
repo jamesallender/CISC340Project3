@@ -160,6 +160,14 @@ void printstate(statetype *stateptr){
 		printf("\t\twritedata %d\n", stateptr->WBEND.writedata);
 }
 
+int signExtend(int num){
+	// convert a 16-bit number into a 32-bit integer
+	if (num & (1<<15) ) {
+		num -= (1<<16);
+	}
+	return num;
+}
+
 int main(int argc, char** argv){
 
 	/** Get command line arguments **/
