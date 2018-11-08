@@ -242,6 +242,12 @@ int main(int argc, char** argv){
 		state.reg[i] = 0;
 	}
 
+	state.IFIDType.instr = NOOPINSTRUCTION;
+	state.IDEXType.instr = NOOPINSTRUCTION;
+	state.EXMEMType.instr = NOOPINSTRUCTION;
+	state.MEMWBType.instr = NOOPINSTRUCTION;
+	state.WBENDType.instr = NOOPINSTRUCTION;
+
 	while(1){
 
 		printstate(&state);
@@ -257,6 +263,7 @@ int main(int argc, char** argv){
 		}
 		newstate = state;
 		newstate.cycles++;
+		
 		/*------------------ IF stage ----------------- */
 
 
