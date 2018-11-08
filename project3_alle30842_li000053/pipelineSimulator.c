@@ -17,12 +17,12 @@
 #define NOOP 7
 #define NOOPINSTRUCTION 0x1c00000
 
-void printstate(statetype *stateptr);
-void printinstruction(int instr);
-int field0(int instruction);
-int field1(int instruction);
-int field2(int instruction);
-int opcode(int instruction);
+// void printstate(statetype *stateptr);
+// void printinstruction(int instr);
+// int field0(int instruction);
+// int field1(int instruction);
+// int field2(int instruction);
+// int opcode(int instruction);
 
 
 typedef struct IFIDstruct{
@@ -72,6 +72,93 @@ typedef struct statestruct{
 	int branches; /* Total number of branches executed */
 	int mispreds; /* Number of branch mispredictions*/
 } statetype;
+
+
+int field0(int instruction){
+	return( (instruction>>19) & 0x7);
+}
+int field1(int instruction){
+	return( (instruction>>16) & 0x7);
+}
+int field2(int instruction){
+	return(instruction & 0xFFFF);
+}
+int opcode(int instruction){
+	return(instruction>>22);
+}
+
+void printinstruction(int instr) {
+	char opcodestring[10];
+	if (opcode(instr) == ADD) {
+		strcpy(opcodestring, "add");
+	} else if (opcode(instr) == NAND) {
+		strcpy(opcodestring, "nand");
+	} else if (opcode(instr) == LW) {
+		strcpy(opcodestring, "lw");
+	} else if (opcode(instr) == SW) {
+		strcpy(opcodestring, "sw");
+	} else if (opcode(instr) == BEQ) {
+		strcpy(opcodestring, "beq");
+	} else if (opcode(instr) == JALR) {
+		strcpy(opcodestring, "jalr");
+	} else if (opcode(instr) == HALT) {
+		strcpy(opcodestring, "halt");
+	} else if (opcode(instr) == NOOP) {
+		strcpy(opcodestring, "noop");
+	} else {
+		strcpy(opcodestring, "data");
+	}
+	if(opcode(instr) == ADD || opcode(instr) == NAND){
+		printf("%s %d %d %d\n", opcodestring, field2(instr), field0(instr), field1(instr));
+	}else if(0 == strcmp(opcodestring, "data")){
+		printf("%s %d\n", opcodestring, signextend(field2(instr)));
+	}else{
+		printf("%s %d %d %d\n", opcodestring, field0(instr), field1(instr),
+		signextend(field2(instr)));
+	}
+}
+
+void printstate(statetype *stateptr){
+	int i;
+	printf("\n@@@\nstate before cycle %d starts\n", stateptr->cycles);
+	printf("\tpc %d\n", stateptr->pc);
+
+	printf("\tdata memory:\n");
+		for (i=0; i<stateptr->nummemory; i++) {
+			printf("\t\tdatamem[ %d ] %d\n", i, stateptr->datamem[i]);
+		}
+
+	printf("\tregisters:\n");
+		for (i=0; i<NUMREGS; i++) {
+			printf("\t\treg[ %d ] %d\n", i, stateptr->reg[i]);
+		}
+
+	printf("\tIFID:\n");
+		printf("\t\tinstruction ");
+		printinstruction(stateptr->IFID.instr);
+		printf("\t\tpcplus1 %d\n", stateptr->IFID.pcplus1);
+	printf("\tIDEX:\n");
+		printf("\t\tinstruction ");
+		printinstruction(stateptr->IDEX.instr);
+		printf("\t\tpcplus1 %d\n", stateptr->IDEX.pcplus1);
+		printf("\t\treadregA %d\n", stateptr->IDEX.readregA);
+		printf("\t\treadregB %d\n", stateptr->IDEX.readregB);
+		printf("\t\toffset %d\n", stateptr->IDEX.offset);
+	printf("\tEXMEM:\n");
+		printf("\t\tinstruction ");
+		printinstruction(stateptr->EXMEM.instr);
+		printf("\t\tbranchtarget %d\n", stateptr->EXMEM.branchtarget);
+		printf("\t\taluresult %d\n", stateptr->EXMEM.aluresult);
+		printf("\t\treadreg %d\n", stateptr->EXMEM.readreg);
+	printf("\tMEMWB:\n");
+		printf("\t\tinstruction ");
+		printinstruction(stateptr->MEMWB.instr);
+		printf("\t\twritedata %d\n", stateptr->MEMWB.writedata);
+	printf("\tWBEND:\n");
+		printf("\t\tinstruction ");
+		printinstruction(stateptr->WBEND.instr);
+		printf("\t\twritedata %d\n", stateptr->WBEND.writedata);
+}
 
 int main(int argc, char** argv){
 
@@ -186,90 +273,4 @@ int main(int argc, char** argv){
 							state with the values calculated in this cycle
 							– AKA “Clock Tick”. */
 	}
-}
-
-int field0(int instruction){
-	return( (instruction>>19) & 0x7);
-}
-int field1(int instruction){
-	return( (instruction>>16) & 0x7);
-}
-int field2(int instruction){
-	return(instruction & 0xFFFF);
-}
-int opcode(int instruction){
-	return(instruction>>22);
-}
-
-void printinstruction(int instr) {
-	char opcodestring[10];
-	if (opcode(instr) == ADD) {
-		strcpy(opcodestring, "add");
-	} else if (opcode(instr) == NAND) {
-		strcpy(opcodestring, "nand");
-	} else if (opcode(instr) == LW) {
-		strcpy(opcodestring, "lw");
-	} else if (opcode(instr) == SW) {
-		strcpy(opcodestring, "sw");
-	} else if (opcode(instr) == BEQ) {
-		strcpy(opcodestring, "beq");
-	} else if (opcode(instr) == JALR) {
-		strcpy(opcodestring, "jalr");
-	} else if (opcode(instr) == HALT) {
-		strcpy(opcodestring, "halt");
-	} else if (opcode(instr) == NOOP) {
-		strcpy(opcodestring, "noop");
-	} else {
-		strcpy(opcodestring, "data");
-	}
-	if(opcode(instr) == ADD || opcode(instr) == NAND){
-		printf("%s %d %d %d\n", opcodestring, field2(instr), field0(instr), field1(instr));
-	}else if(0 == strcmp(opcodestring, "data")){
-		printf("%s %d\n", opcodestring, signextend(field2(instr)));
-	}else{
-		printf("%s %d %d %d\n", opcodestring, field0(instr), field1(instr),
-		signextend(field2(instr)));
-	}
-}
-
-void printstate(statetype *stateptr){
-	int i;
-	printf("\n@@@\nstate before cycle %d starts\n", stateptr->cycles);
-	printf("\tpc %d\n", stateptr->pc);
-
-	printf("\tdata memory:\n");
-		for (i=0; i<stateptr->nummemory; i++) {
-			printf("\t\tdatamem[ %d ] %d\n", i, stateptr->datamem[i]);
-		}
-
-	printf("\tregisters:\n");
-		for (i=0; i<NUMREGS; i++) {
-			printf("\t\treg[ %d ] %d\n", i, stateptr->reg[i]);
-		}
-
-	printf("\tIFID:\n");
-		printf("\t\tinstruction ");
-		printinstruction(stateptr->IFID.instr);
-		printf("\t\tpcplus1 %d\n", stateptr->IFID.pcplus1);
-	printf("\tIDEX:\n");
-		printf("\t\tinstruction ");
-		printinstruction(stateptr->IDEX.instr);
-		printf("\t\tpcplus1 %d\n", stateptr->IDEX.pcplus1);
-		printf("\t\treadregA %d\n", stateptr->IDEX.readregA);
-		printf("\t\treadregB %d\n", stateptr->IDEX.readregB);
-		printf("\t\toffset %d\n", stateptr->IDEX.offset);
-	printf("\tEXMEM:\n");
-		printf("\t\tinstruction ");
-		printinstruction(stateptr->EXMEM.instr);
-		printf("\t\tbranchtarget %d\n", stateptr->EXMEM.branchtarget);
-		printf("\t\taluresult %d\n", stateptr->EXMEM.aluresult);
-		printf("\t\treadreg %d\n", stateptr->EXMEM.readreg);
-	printf("\tMEMWB:\n");
-		printf("\t\tinstruction ");
-		printinstruction(stateptr->MEMWB.instr);
-		printf("\t\twritedata %d\n", stateptr->MEMWB.writedata);
-	printf("\tWBEND:\n");
-		printf("\t\tinstruction ");
-		printinstruction(stateptr->WBEND.instr);
-		printf("\t\twritedata %d\n", stateptr->WBEND.writedata);
 }
