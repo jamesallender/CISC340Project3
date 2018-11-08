@@ -170,13 +170,13 @@ void printstate(statetype *stateptr){
 }
 
 void fetchStage(statetype state, statetype newstate){
-	newstate.pc += 1;
-	newstate.fetched += 1;
+	newstate.pc = state.pc + 1;
+	newstate.fetched = state.fetched + 1;
 	newstate.IFID.instr = state.instrmem[state.pc];
-	newstate.IFID.pcplus1 = newstate.pc;
+	newstate.IFID.pcplus1 = state.pc + 1;
 }
 
-void decodeStage(statetype *statePtr, *newstatePtr){
+void decodeStage(statetype statePtr, newstatePtr){
 	// typedef struct IDEXstruct{
 	// 	int instr;
 	// 	int pcplus1;
@@ -328,7 +328,7 @@ int main(int argc, char** argv){
 
 		/*------------------ ID stage ----------------- */
 
-		decodeStage(&state, &newstate);
+		decodeStage(state, newstate);
 
 		/*------------------ EX stage ----------------- */
 
