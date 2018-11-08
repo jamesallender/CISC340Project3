@@ -192,7 +192,6 @@ void decodeStage(statetype statePtr, statetype newstatePtr){
 	newstatePtr.IDEX.readregB = statePtr.IFID.instr;
 	newstatePtr.IDEX.offset = statePtr.IFID.instr;
 
-	printf 
 
 }
 
