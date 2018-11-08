@@ -193,10 +193,10 @@ int main(int argc, char** argv){
 					printf("Option -%c requires an argument.\n", optopt);
 				}
 				else if(isprint(optopt)){
-					printf("Unknown option `-%c'.\n", optopt);
+					printf("Unknown option '-%c'.\n", optopt);
 				}
 				else{
-					printf("Unknown option character `\\x%x'.\n", optopt);
+					printf("Unknown option character '\\x%x'.\n", optopt);
 					return 1;
 				}
 				break;
@@ -247,10 +247,10 @@ int main(int argc, char** argv){
 		printstate(&state);
 		/* check for halt */
 		if(HALT == opcode(state.MEMWB.instr)) {
-			printf(“machine halted\n”);
-			printf(“total of %d cycles executed\n”, state.cycles);
+			printf("machine halted\n");
+			printf("total of %d cycles executed\n", state.cycles);
 			printf("total of %d instructions fetched\n", state.fetched);
-			printf(“total of %d instructions retired\n”, state.retired);
+			printf("total of %d instructions retired\n", state.retired);
 			printf("total of %d branches executed\n", state.branches);
 			printf("total of %d branch mispredictions\n", state.mispreds);
 			exit(0);
@@ -280,6 +280,6 @@ int main(int argc, char** argv){
 		state = newstate; /* this is the last statement before the end of the loop.
 							It marks the end of the cycle and updates the current
 							state with the values calculated in this cycle
-							– AKA “Clock Tick”. */
+							– AKA "Clock Tick". */
 	}
 }
