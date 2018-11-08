@@ -17,13 +17,13 @@
 #define NOOP 7
 #define NOOPINSTRUCTION 0x1c00000
 
-// void printstate(statetype *stateptr);
-// void printinstruction(int instr);
-// int field0(int instruction);
-// int field1(int instruction);
-// int field2(int instruction);
-// int opcode(int instruction);
-//int signExtend(int num);
+void printstate(statetype *stateptr);
+void printinstruction(int instr);
+int field0(int instruction);
+int field1(int instruction);
+int field2(int instruction);
+int opcode(int instruction);
+int signExtend(int num);
 
 
 typedef struct IFIDstruct{
