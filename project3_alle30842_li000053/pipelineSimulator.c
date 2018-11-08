@@ -176,6 +176,26 @@ void fetchStage(statetype state, statetype newstate){
 	newstate.IFID.pcplus1 = newstate.pc;
 }
 
+void decodeStage(statetype *statePtr, *newstatePtr){
+	// typedef struct IDEXstruct{
+	// 	int instr;
+	// 	int pcplus1;
+	// 	int readregA;
+	// 	int readregB;
+	// 	int offset;
+	// } IDEXType;
+
+	newstatePtr.IDEX.pcplus1 = state.IFID.pcplus1;
+	newstatePtr.IDEX.instr = state.IFID.instr;
+
+	newstatePtr.IDEX.readregA = state.IFID.instr;
+	newstatePtr.IDEX.readregB = state.IFID.instr;
+	newstatePtr.IDEX.offset = state.IFID.instr;
+
+	printf 
+
+}
+
 int main(int argc, char** argv){
 
 	/** Get command line arguments **/
@@ -308,7 +328,7 @@ int main(int argc, char** argv){
 
 		/*------------------ ID stage ----------------- */
 
-
+		decodeStage(&state, &newstate);
 
 		/*------------------ EX stage ----------------- */
 
