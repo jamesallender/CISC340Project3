@@ -169,6 +169,13 @@ void printstate(statetype *stateptr){
 		printf("\t\twritedata %d\n", stateptr->WBEND.writedata);
 }
 
+void fetchStage(statetype state, statetype newstate){
+	newstate.pc += 1;
+	newstate.fetched += 1;
+	newstate.IFID.instr = state.instrmem[state.pc];
+	newstate.IFID.pcplus1 = newstate.pc;
+}
+
 int main(int argc, char** argv){
 
 	/** Get command line arguments **/
@@ -242,11 +249,11 @@ int main(int argc, char** argv){
 		state.reg[i] = 0;
 	}
 
-	state.IFIDType.instr = NOOPINSTRUCTION;
-	state.IDEXType.instr = NOOPINSTRUCTION;
-	state.EXMEMType.instr = NOOPINSTRUCTION;
-	state.MEMWBType.instr = NOOPINSTRUCTION;
-	state.WBENDType.instr = NOOPINSTRUCTION;
+	state.IFID.instr = NOOPINSTRUCTION;
+	state.IDEX.instr = NOOPINSTRUCTION;
+	state.EXMEM.instr = NOOPINSTRUCTION;
+	state.MEMWB.instr = NOOPINSTRUCTION;
+	state.WBEND.instr = NOOPINSTRUCTION;
 
 	while(1){
 
@@ -297,7 +304,7 @@ int main(int argc, char** argv){
 
 		/*------------------ IF stage ----------------- */
 
-
+		fetchStage(state, newstate);
 
 		/*------------------ ID stage ----------------- */
 
