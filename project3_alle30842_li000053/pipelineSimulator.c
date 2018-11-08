@@ -76,7 +76,7 @@ typedef struct statestruct{
 int main(int argc, char** argv){
 
 	/** Get command line arguments **/
-    char* fname;
+	char* fname;
 
 	opterr = 0;
 
@@ -114,11 +114,40 @@ int main(int argc, char** argv){
 		printf("Cannot open file '%s' : %s\n", fname, strerror(errno));
 		return -1;
 	}
+
+		/* count the number of lines by counting newline characters */
+	int line_count = 0;
+	int c;
+    while (EOF != (c=getc(fp))) {
+        if ( c == '\n' ){
+            line_count++;
+		}
+    }
 	// reset fp to the beginning of the file
 	rewind(fp);
 
+	// INITALIZATION
+	// Make sure to initialize all values correctly:
+	// a. state.numMemory should be set to the number of memory words in the machine-code file.
+	// b. state.cycles/fetched/retired/branches/mispreds should be initialized to 0.
+	// c. pc and all registers should be initialized to 0.
+	// d. the instruction field in all pipeline registers should be set to the noop instruction (0x1c00000).
+	statetype state;
+	statetype newstate
+
+	state.numMemory = line_count;
+	state.cycles = 0;
+	state.fetched = 0;
+	state.retired = 0;
+	state.branches = 0;
+	state.mispreds = 0;
+	state.pc = 0;
+	for(int i = 0; i < NUMREGS; i++){
+		state.reg[i] = 0;
+	}
 
 	while(1){
+
 		printstate(&state);
 		/* check for halt */
 		if(HALT == opcode(state.MEMWB.instr)) {
