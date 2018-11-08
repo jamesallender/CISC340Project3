@@ -1,3 +1,10 @@
+#include <errno.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
 #define NUMMEMORY 65536 /* maximum number of data words in memory */
 #define NUMREGS 8 /* number of machine registers */
 #define ADD 0
