@@ -120,10 +120,10 @@ void printinstruction(int instr) {
 	if(opcode(instr) == ADD || opcode(instr) == NAND){
 		printf("%s %d %d %d\n", opcodestring, field2(instr), field0(instr), field1(instr));
 	}else if(0 == strcmp(opcodestring, "data")){
-		printf("%s %d\n", opcodestring, signextend(field2(instr)));
+		printf("%s %d\n", opcodestring, signExtend(field2(instr)));
 	}else{
 		printf("%s %d %d %d\n", opcodestring, field0(instr), field1(instr),
-		signextend(field2(instr)));
+		signExtend(field2(instr)));
 	}
 }
 
