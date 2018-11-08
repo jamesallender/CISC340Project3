@@ -23,6 +23,7 @@
 // int field1(int instruction);
 // int field2(int instruction);
 // int opcode(int instruction);
+//int signExtend(int num);
 
 
 typedef struct IFIDstruct{
@@ -85,6 +86,14 @@ int field2(int instruction){
 }
 int opcode(int instruction){
 	return(instruction>>22);
+}
+
+int signExtend(int num){
+	// convert a 16-bit number into a 32-bit integer
+	if (num & (1<<15) ) {
+		num -= (1<<16);
+	}
+	return num;
 }
 
 void printinstruction(int instr) {
@@ -158,14 +167,6 @@ void printstate(statetype *stateptr){
 		printf("\t\tinstruction ");
 		printinstruction(stateptr->WBEND.instr);
 		printf("\t\twritedata %d\n", stateptr->WBEND.writedata);
-}
-
-int signExtend(int num){
-	// convert a 16-bit number into a 32-bit integer
-	if (num & (1<<15) ) {
-		num -= (1<<16);
-	}
-	return num;
 }
 
 int main(int argc, char** argv){
