@@ -176,7 +176,7 @@ void fetchStage(statetype state, statetype newstate){
 	newstate.IFID.pcplus1 = state.pc + 1;
 }
 
-void decodeStage(statetype statePtr, newstatePtr){
+void decodeStage(statetype statePtr, statetype newstatePtr){
 	// typedef struct IDEXstruct{
 	// 	int instr;
 	// 	int pcplus1;
