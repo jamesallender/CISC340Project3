@@ -176,7 +176,7 @@ void fetchStage(statetype state, statetype newstate){
 	newstate.IFID.pcplus1 = state.pc + 1;
 }
 
-void decodeStage(statetype statePtr, newstatePtr){
+void decodeStage(statetype statePtr, statetype newstatePtr){
 	// typedef struct IDEXstruct{
 	// 	int instr;
 	// 	int pcplus1;
@@ -185,14 +185,13 @@ void decodeStage(statetype statePtr, newstatePtr){
 	// 	int offset;
 	// } IDEXType;
 
-	newstatePtr.IDEX.pcplus1 = state.IFID.pcplus1;
-	newstatePtr.IDEX.instr = state.IFID.instr;
+	newstatePtr.IDEX.pcplus1 = statePtr.IFID.pcplus1;
+	newstatePtr.IDEX.instr = statePtr.IFID.instr;
 
-	newstatePtr.IDEX.readregA = state.IFID.instr;
-	newstatePtr.IDEX.readregB = state.IFID.instr;
-	newstatePtr.IDEX.offset = state.IFID.instr;
+	newstatePtr.IDEX.readregA = field0(statePtr.IFID.instr);
+	newstatePtr.IDEX.readregB = field1(statePtr.IFID.instr);
+	newstatePtr.IDEX.offset = signExtend(field2(statePtr.IFID.instr));
 
-	printf 
 
 }
 
