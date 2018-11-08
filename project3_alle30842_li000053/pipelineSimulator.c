@@ -133,7 +133,7 @@ int main(int argc, char** argv){
 	// c. pc and all registers should be initialized to 0.
 	// d. the instruction field in all pipeline registers should be set to the noop instruction (0x1c00000).
 	statetype state;
-	statetype newstate
+	statetype newstate;
 
 	state.numMemory = line_count;
 	state.cycles = 0;
