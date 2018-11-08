@@ -12,6 +12,7 @@
 	add	3	3	2
 	noop
 	noop
-	add	3	3	2		
+	add	3	3	2
+	halt	
 a	.fill	4	
 b	.fill	2
