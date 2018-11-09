@@ -170,9 +170,17 @@ void printstate(statetype *stateptr){
 }
 
 void fetchStage(statetype state, statetype newstate){
+	//set pc in newstate
 	newstate.pc = state.pc + 1;
+	
+	//set fetched num in newstate
 	newstate.fetched = state.fetched + 1;
+	
+	//set instruction in IFID buffer in newstate
+	//fetching the new instruction
 	newstate.IFID.instr = state.instrmem[state.pc];
+	
+	//set pcplu1 in IFID buffer in newstate
 	newstate.IFID.pcplus1 = state.pc + 1;
 }
 
@@ -194,26 +202,33 @@ void decodeStage(statetype state, statetype newstate){
 }
 
 void executeStage(statetype state, statetype newstate){
-    newstate.EXMEM.instr = state.IDEX.instr;
-    newstate.EXMEM.branchtarget = state.IDEX.pcplus1 + state.IDEX.offset;
+	//set instr in EXMEM buffer in newstate
+	newstate.EXMEM.instr = state.IDEX.instr;
+    
+	//set branch target address in EXMEM buffer in newstate
+	newstate.EXMEM.branchtarget = state.IDEX.pcplus1 + state.IDEX.offset;
 
+
+	//set ALU result in EXMEM buffer in newstate
     int operation = opcode(state.IDEX.instr);
 
-    if(operation = ADD){
+    if(operation == ADD){
         newstate.EXMEM.aluresult = state.IDEX.readregA + state.IDEX.readregB;
-    }else if(operation = NAND){
+    }else if(operation == NAND){
         newstate.EXMEM.aluresult = ~(state.IDEX.readregA & state.IDEX.readregB);
-    }else if(operation = LW){
-
-    }else if(operation = SW){
-
-    }else if(operation = BEQ){
-
-    }else if(operation = NOOP){
-
+    }else if(operation == LW || operation == SW){
+		newstate.EXMEM.aluresult = state.IDEX.readregB + state.IDEX.offset;
+    }else if(operation == BEQ){
+		newstate.EXMEM.aluresult = state.IDEX.readregA - state.IDEX.readregB;
+    }else if(operation == NOOP){
+		newstate.EXMEM.aluresult = -1;
     }else{
-
+		fprintf(stderr,"%s %d\n" ,"FUNCTION: executeStage. REASON: Failed to get opcode from the instruction. INSTR: ", state.IDEX.instr);
     }
+
+
+	//set readreg in EXMEM buffer in newstate
+	newstate.EXMEM.readreg = state.IDEX.readregA;
 }
 
 void memoryStage(statetype state, statetype newstate){
@@ -231,6 +246,15 @@ void memoryStage(statetype state, statetype newstate){
 
 
 
+}
+
+void writeBackStage(statetype state, statetype newstate){
+	
+	//set instr in WBEND buffer in newstate
+	newstate.WBEND.instr = state.MEMWB.instr;
+
+	//set writedata in WBEND buffer in newstate
+	newstate.WBEND.writedata = state.MEMWB.writedata;
 }
 
 int main(int argc, char** argv){
