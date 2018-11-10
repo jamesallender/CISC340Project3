@@ -169,6 +169,49 @@ void printstate(statetype *stateptr){
 		printf("\t\twritedata %d\n", stateptr->WBEND.writedata);
 }
 
+void forwardingUnit(statetye state, statetpye newstate){
+	//only use in the execution stage
+
+	//opcodes might cause data hazard
+	//ADD and NAND will overwrite value in destination with alu result
+	//LW will overwrite value in destination with data read from DataMem
+
+	//opcodes might take in data hazard
+	//ADD & NAND & BEQ & SW will all need to know the changes in RegA & RegB
+	//LW need to know the changes only in RegB(Destination register)
+	//halt & noop will not care
+
+	//Buffer that might contain hazard
+	// EXMEM & MEMWB & WBEND
+
+	int operation = opcode(state.IDEX.instr);
+	int regA = field0(state.IDEX.instr);
+	int regB = field1(state.IDEX.instr);	
+
+	int regAHazard = 0;
+	int regBHazard = 0;
+
+	if(operation == NOOP){
+		//no doing anything
+		return;
+	}
+
+	//EXMEM
+	int EXMEMopcode= opcode(state.EXMEM.instr);
+	int EXMEMregA = field0(state.EXMEM.instr);
+	int EXMEMregB = field1(state.EXMEM.instr);
+	int EXMEMregDest = field2(state.EXMEM.instr);
+
+	if(EXMEMopcode == ADD || EXMEMopcode == NAND){
+		if(EXMEMregDest = regA){
+			
+		}
+	}	
+	
+	
+		
+}
+
 void fetchStage(statetype state, statetype newstate){
 	//set pc in newstate
 	newstate.pc = state.pc + 1;
