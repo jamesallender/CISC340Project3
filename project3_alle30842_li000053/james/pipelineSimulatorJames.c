@@ -384,10 +384,21 @@ int main(int argc, char** argv){
 	state.branches = 0;
 	state.mispreds = 0; // because we predict branch not taken will mis predictions and branches be the same
 	state.pc = 0;
+	// Set registers to 0
 	for(int i = 0; i < NUMREGS; i++){
 		state.reg[i] = 0;
 	}
 
+	// Populate instruction memory
+	char lineBuffer[100]; // Array to hold our line
+	int i = 0;
+	// loops through input file
+	while (fgets(lineBuffer, 100, fp) !=NULL){
+		state.instrmem[i] = line;
+		i++;
+	}	
+
+	// Set inital insturctions in pipeline
 	state.IFID.instr = NOOPINSTRUCTION;
 	state.IDEX.instr = NOOPINSTRUCTION;
 	state.EXMEM.instr = NOOPINSTRUCTION;
