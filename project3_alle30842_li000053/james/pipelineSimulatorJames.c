@@ -483,22 +483,22 @@ int main(int argc, char** argv){
 
 		/*------------------ IF stage ----------------- */
 
-		fetchStage(state, newstate);
+		fetchStage(*state, *newstate);
 
 		/*------------------ ID stage ----------------- */
 
-		decodeStage(state, newstate);
+		decodeStage(*state, *newstate);
 
 		/*------------------ EX stage ----------------- */
 
-		executeStage(state, newstate);
+		executeStage(*state, *newstate);
 
 		/*------------------ MEM stage ----------------- */
 
-		memoryStage(state, newstate);
+		memoryStage(*state, *newstate);
 
 		/*------------------ WB stage ----------------- */
-		writeBackStage(state, newstate);
+		writeBackStage(*state, *newstate);
 
 
 		state = newstate; /* this is the last statement before the end of the loop.
