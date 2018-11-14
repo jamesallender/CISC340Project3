@@ -276,7 +276,7 @@ void memoryStage(statetype state, statetype newstate){
 	}
 	// if the instruction is a SW, Write to memory 
 	else if (operation == SW) {
-		newstate.datamem[memAddress] = state.EXMEM.readreg;
+		newstate.datamem[aluresult] = state.EXMEM.readreg;
 	}
 	// for all other functions pass the alu result
 	else{
@@ -289,7 +289,7 @@ void memoryStage(statetype state, statetype newstate){
 void writeBackStage(statetype state, statetype newstate){
 
 	// Get instruction
-	instr = state.MEMWB.instr;
+	int instr = state.MEMWB.instr;
 	
 	//set instr in WBEND buffer in newstate
 	newstate.WBEND.instr = instr;
