@@ -355,26 +355,67 @@ void memoryStage(statetype state, statetype newstate){
 	// 	int writedata;
 	// } MEMWBType;
 
+	// writeData defult value is 0
+	int writeData = 0;
 
+	// Get our instruction from the previous EXMEM buffer
+	int instr = state.EXMEM.instr;
+	// set the new state MEMWB buffer to the current instruction
+	newstate.MEMWB.instr = instr;
+	// get the alu result
+	int aluresult = state.EXMEM.aluresult;
 
+	// Get operation
+	int operation = opcode(instr);
+
+	// If instruction is a NOOP
+	if(operation ==  NOOP){
+		writeData = 0;
+	}
+	// If instruction is a BEQ
+	else if(operation ==  BEQ){
+		// If the branch is to be taken
+		if (aluresult == 0){
+			// Set the new states pc to the branch target
+			newstate.pc = state.EXMEM.branchtarget;
+		}
+	}
+	// if the instruction is a LW, get the data from memory
+	else if (operation == LW) {
+		// get the data from memory
+		writeData = state.datamem[aluresult];
+	}
+	// if the instruction is a SW, Write to memory 
+	else if (operation == SW) {
+		newstate.datamem[aluresult] = state.EXMEM.readreg;
+	}
+	// for all other functions pass the alu result
+	else{
+		writeData = aluresult;
+	}
+
+	newstate.MEMWB.writedata = writeData;
 }
 
 void writeBackStage(statetype state, statetype newstate){
+
+	// Get instruction
+	int instr = state.MEMWB.instr;
 	
 	//set instr in WBEND buffer in newstate
-	newstate.WBEND.instr = state.MEMWB.instr;
+	newstate.WBEND.instr = instr;
 
 	//set writedata in WBEND buffer in newstate
 	newstate.WBEND.writedata = state.MEMWB.writedata;
 
 	//write back to the register file
-	int operation = opcode(state.MEMWB.instr);
+	int operation = opcode(instr);
 	int regDest;
 
 	if(operation == ADD || operation == NAND){
-		int regDest = field2(state.MEMWB.instr);
+		int regDest = field2(instr);
 	}else if(operation == LW){
-		int regDest = field0(state.MEMWB.instr);
+		int regDest = field0(instr);
 	}else{
 		// In this case, we dont need to write back to the register file.
 		// SW, BEQ, NOOP, and HALT belong to this case.
@@ -452,12 +493,26 @@ int main(int argc, char** argv){
 	state.fetched = 0;
 	state.retired = 0;
 	state.branches = 0;
-	state.mispreds = 0;
+	state.mispreds = 0; // because we predict branch not taken will mis predictions and branches be the same
 	state.pc = 0;
+	// Set registers to 0
 	for(int i = 0; i < NUMREGS; i++){
 		state.reg[i] = 0;
 	}
 
+	// Populate instruction memory
+	char line[256];
+	
+	int i = 0;
+	while (fgets(line, sizeof(line), fp)) {
+        /* note that fgets doesn't strip the terminating \n, checking its
+           presence would allow to handle lines longer that sizeof(line) */
+		state.instrmem[i] = atoi(line);
+		i++;
+    }
+    fclose(fp);
+
+	// Set inital insturctions in pipeline
 	state.IFID.instr = NOOPINSTRUCTION;
 	state.IDEX.instr = NOOPINSTRUCTION;
 	state.EXMEM.instr = NOOPINSTRUCTION;
@@ -511,6 +566,7 @@ int main(int argc, char** argv){
 		// 	int writedata;
 		// } WBENDType;
 
+
 		/*------------------ IF stage ----------------- */
 
 		fetchStage(state, newstate);
@@ -525,9 +581,10 @@ int main(int argc, char** argv){
 
 		/*------------------ MEM stage ----------------- */
 
-
+		memoryStage(state, newstate);
 
 		/*------------------ WB stage ----------------- */
+		writeBackStage(state, newstate);
 
 
 
