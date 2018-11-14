@@ -179,6 +179,8 @@ void fetchStage(statetype state, statetype newstate){
 	//set instruction in IFID buffer in newstate
 	//fetching the new instruction
 	newstate.IFID.instr = state.instrmem[state.pc];
+	printf("fetching instruction\n");
+	printf("%d\n", state.instrmem[state.pc]);
 	
 	//set pcplu1 in IFID buffer in newstate
 	newstate.IFID.pcplus1 = state.pc + 1;
@@ -461,10 +463,7 @@ int main(int argc, char** argv){
 		// 	int writedata;
 		// } WBENDType;
 
-		printf("printing from structure\n");
-		for (int i = 0; i < state.numMemory; i++){
-			printf("%d\n", state.instrmem[i]);
-		}
+
 		/*------------------ IF stage ----------------- */
 
 		fetchStage(state, newstate);
