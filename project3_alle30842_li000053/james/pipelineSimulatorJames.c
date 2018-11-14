@@ -411,6 +411,11 @@ int main(int argc, char** argv){
 	state.MEMWB.instr = NOOPINSTRUCTION;
 	state.WBEND.instr = NOOPINSTRUCTION;
 
+	printf("printing from structure\n");
+	for (int i = 0; i < state.numMemory; i++){
+		printf("%d\n", state.instrmem[i]);
+	}
+
 	while(1){
 
 		printstate(&state);
