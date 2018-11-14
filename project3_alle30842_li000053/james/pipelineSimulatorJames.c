@@ -478,6 +478,8 @@ int main(int argc, char** argv){
 		// 	int writedata;
 		// } WBENDType;
 
+		newstate.pc = state.pc +1;
+
 
 		/*------------------ IF stage ----------------- */
 
