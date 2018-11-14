@@ -389,7 +389,6 @@ int main(int argc, char** argv){
 		state.reg[i] = 0;
 	}
 
-	printf("Printing intstructuins\n");
 	// Populate instruction memory
 	char line[256];
 	
@@ -399,7 +398,6 @@ int main(int argc, char** argv){
            presence would allow to handle lines longer that sizeof(line) */
 		state.instrmem[i] = atoi(line);
 
-		printf("%d\n", atoi(line));
 		i++;
     }
     fclose(fp);
@@ -463,6 +461,10 @@ int main(int argc, char** argv){
 		// 	int writedata;
 		// } WBENDType;
 
+		printf("printing from structure\n");
+		for (int i = 0; i < state.numMemory; i++){
+			printf("%d\n", state.instrmem[i]);
+		}
 		/*------------------ IF stage ----------------- */
 
 		fetchStage(state, newstate);
