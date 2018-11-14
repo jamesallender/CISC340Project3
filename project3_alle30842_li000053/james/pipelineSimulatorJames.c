@@ -390,13 +390,16 @@ int main(int argc, char** argv){
 	}
 
 	// Populate instruction memory
-	char lineBuffer[100]; // Array to hold our line
+	char line[256];
+	
 	int i = 0;
-	// loops through input file
-	while (fgets(lineBuffer, 100, fp) !=NULL){
-		state.instrmem[i] = lineBuffer;
+	while (fgets(line, sizeof(line), fp)) {
+        /* note that fgets doesn't strip the terminating \n, checking its
+           presence would allow to handle lines longer that sizeof(line) */
+		state.instrmem[i] = atoi(line);
 		i++;
-	}	
+    }
+    fclose(fp);
 
 	// Set inital insturctions in pipeline
 	state.IFID.instr = NOOPINSTRUCTION;
