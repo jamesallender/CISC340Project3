@@ -255,7 +255,7 @@ void memoryStage(statetype state, statetype newstate){
 	int aluResult = state.EXMEM.aluresult;
 
 	// Get operation
-	int operation = opcode(instr)
+	int operation = opcode(instr);
 
 	// If instruction is a NOOP
 	if(operation ==  NOOP){
@@ -280,7 +280,7 @@ void memoryStage(statetype state, statetype newstate){
 	}
 	// for all other functions pass the alu result
 	else{
-		writeData = aluresult
+		writeData = aluresult;
 	}
 
 	newstate.MEMWB.writedata = writeData;
@@ -289,7 +289,7 @@ void memoryStage(statetype state, statetype newstate){
 void writeBackStage(statetype state, statetype newstate){
 
 	// Get instruction
-	instr = state.MEMWB.instr
+	instr = state.MEMWB.instr;
 	
 	//set instr in WBEND buffer in newstate
 	newstate.WBEND.instr = instr;
