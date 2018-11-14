@@ -169,7 +169,7 @@ void printstate(statetype *stateptr){
 		printf("\t\twritedata %d\n", stateptr->WBEND.writedata);
 }
 
-void forwardingUnit(statetye state, statetpye newstate){
+void forwardingUnit(statetype state, statetype newstate){
 	//only use in the execution stage
 
 	//opcodes might cause data hazard
@@ -298,6 +298,23 @@ void writeBackStage(statetype state, statetype newstate){
 
 	//set writedata in WBEND buffer in newstate
 	newstate.WBEND.writedata = state.MEMWB.writedata;
+
+	//write back to the register file
+	int operation = opcode(state.MEMWB.instr);
+	int regDest;
+
+	if(operation == ADD || operation == NAND){
+		int regDest = field2(state.MEMWB.instr);
+	}else if(operation == LW){
+		int regDest = field0(state.MEMWB.instr);
+	}else{
+		// In this case, we dont need to write back to the register file.
+		// SW, BEQ, NOOP, and HALT belong to this case.
+		return;
+	}
+
+	//write back here
+	newstate.reg[regDest] = state.MEMWB.writedata;
 }
 
 int main(int argc, char** argv){
