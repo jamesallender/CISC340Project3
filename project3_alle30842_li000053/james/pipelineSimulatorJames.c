@@ -252,7 +252,7 @@ void memoryStage(statetype state, statetype newstate){
 	// set the new state MEMWB buffer to the current instruction
 	newstate.MEMWB.instr = instr;
 	// get the alu result
-	int aluResult = state.EXMEM.aluresult;
+	int aluresult = state.EXMEM.aluresult;
 
 	// Get operation
 	int operation = opcode(instr);
