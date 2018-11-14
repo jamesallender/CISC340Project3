@@ -134,7 +134,7 @@ void printstate(statetype *stateptr){
 
 	printf("\tdata memory:\n");
 		for (i=0; i<stateptr->numMemory; i++) {
-			printf("\t\tdatamem[ %d ] %d\n", i, stxateptr->datamem[i]);
+			printf("\t\tdatamem[ %d ] %d\n", i, stateptr->datamem[i]);
 		}
 
 	printf("\tregisters:\n");
@@ -179,7 +179,7 @@ void fetchStage(statetype state, statetype newstate){
 	//set instruction in IFID buffer in newstate
 	//fetching the new instruction
 	newstate.IFID.instr = state.instrmem[state.pc];
-	printf("fetching instruction\n");
+	printf("fetching instructions\n");
 	printf("%d\n", state.instrmem[state.pc]);
 	
 	//set pcplu1 in IFID buffer in newstate
