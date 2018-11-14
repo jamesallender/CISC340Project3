@@ -389,6 +389,7 @@ int main(int argc, char** argv){
 		state.reg[i] = 0;
 	}
 
+	printf("Printing intstructuins\n");
 	// Populate instruction memory
 	char line[256];
 	
@@ -397,6 +398,8 @@ int main(int argc, char** argv){
         /* note that fgets doesn't strip the terminating \n, checking its
            presence would allow to handle lines longer that sizeof(line) */
 		state.instrmem[i] = atoi(line);
+
+		printf("%d\n", atoi(line));
 		i++;
     }
     fclose(fp);
