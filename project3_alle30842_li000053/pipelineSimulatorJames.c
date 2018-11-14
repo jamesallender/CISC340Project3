@@ -170,9 +170,17 @@ void printstate(statetype *stateptr){
 }
 
 void fetchStage(statetype state, statetype newstate){
+	//set pc in newstate
 	newstate.pc = state.pc + 1;
+	
+	//set fetched num in newstate
 	newstate.fetched = state.fetched + 1;
+	
+	//set instruction in IFID buffer in newstate
+	//fetching the new instruction
 	newstate.IFID.instr = state.instrmem[state.pc];
+	
+	//set pcplu1 in IFID buffer in newstate
 	newstate.IFID.pcplus1 = state.pc + 1;
 }
 
@@ -194,26 +202,33 @@ void decodeStage(statetype state, statetype newstate){
 }
 
 void executeStage(statetype state, statetype newstate){
-    newstate.EXMEM.instr = state.IDEX.instr;
-    newstate.EXMEM.branchtarget = state.IDEX.pcplus1 + state.IDEX.offset;
+	//set instr in EXMEM buffer in newstate
+	newstate.EXMEM.instr = state.IDEX.instr;
+    
+	//set branch target address in EXMEM buffer in newstate
+	newstate.EXMEM.branchtarget = state.IDEX.pcplus1 + state.IDEX.offset;
 
+
+	//set ALU result in EXMEM buffer in newstate
     int operation = opcode(state.IDEX.instr);
 
-    if(operation = ADD){
+    if(operation == ADD){
         newstate.EXMEM.aluresult = state.IDEX.readregA + state.IDEX.readregB;
-    }else if(operation = NAND){
+    }else if(operation == NAND){
         newstate.EXMEM.aluresult = ~(state.IDEX.readregA & state.IDEX.readregB);
-    }else if(operation = LW){
-
-    }else if(operation = SW){
-
-    }else if(operation = BEQ){
-
-    }else if(operation = NOOP){
-
+    }else if(operation == LW || operation == SW){
+		newstate.EXMEM.aluresult = state.IDEX.readregB + state.IDEX.offset;
+    }else if(operation == BEQ){
+		newstate.EXMEM.aluresult = state.IDEX.readregA - state.IDEX.readregB;
+    }else if(operation == NOOP){
+		newstate.EXMEM.aluresult = -1;
     }else{
-
+		fprintf(stderr,"%s %d\n" ,"FUNCTION: executeStage. REASON: Failed to get opcode from the instruction. INSTR: ", state.IDEX.instr);
     }
+
+
+	//set readreg in EXMEM buffer in newstate
+	newstate.EXMEM.readreg = state.IDEX.readregA;
 }
 
 void memoryStage(statetype state, statetype newstate){
@@ -229,8 +244,75 @@ void memoryStage(statetype state, statetype newstate){
 	// 	int writedata;
 	// } MEMWBType;
 
+	// writeData defult value is 0
+	int writeData = 0;
 
+	// Get our instruction from the previous EXMEM buffer
+	int instr = state.EXMEM.instr;
+	// set the new state MEMWB buffer to the current instruction
+	newstate.MEMWB.instr = instr;
+	// get the alu result
+	int aluResult = state.EXMEM.aluresult;
 
+	// Get operation
+	int operation = opcode(instr)
+
+	// If instruction is a NOOP
+	if(operation ==  NOOP){
+		writeData = 0;
+	}
+	// If instruction is a BEQ
+	else if(operation ==  BEQ){
+		// If the branch is to be taken
+		if (aluresult == 0){
+			// Set the new states pc to the branch target
+			newstate.pc = state.EXMEM.branchtarget;
+		}
+	}
+	// if the instruction is a LW, get the data from memory
+	else if (operation == LW) {
+		// get the data from memory
+		writeData = state.datamem[aluresult];
+	}
+	// if the instruction is a SW, Write to memory 
+	else if (operation == SW) {
+		newstate.datamem[memAddress] = state.EXMEM.readreg;
+	}
+	// for all other functions pass the alu result
+	else{
+		writeData = aluresult
+	}
+
+	newstate.MEMWB.writedata = writeData;
+}
+
+void writeBackStage(statetype state, statetype newstate){
+
+	// Get instruction
+	instr = state.MEMWB.instr
+	
+	//set instr in WBEND buffer in newstate
+	newstate.WBEND.instr = instr;
+
+	//set writedata in WBEND buffer in newstate
+	newstate.WBEND.writedata = state.MEMWB.writedata;
+
+	//write back to the register file
+	int operation = opcode(instr);
+	int regDest;
+
+	if(operation == ADD || operation == NAND){
+		int regDest = field2(instr);
+	}else if(operation == LW){
+		int regDest = field0(instr);
+	}else{
+		// In this case, we dont need to write back to the register file.
+		// SW, BEQ, NOOP, and HALT belong to this case.
+		return;
+	}
+
+	//write back here
+	newstate.reg[regDest] = state.MEMWB.writedata;
 }
 
 int main(int argc, char** argv){
@@ -300,7 +382,7 @@ int main(int argc, char** argv){
 	state.fetched = 0;
 	state.retired = 0;
 	state.branches = 0;
-	state.mispreds = 0;
+	state.mispreds = 0; // because we predict branch not taken will mis predictions and branches be the same
 	state.pc = 0;
 	for(int i = 0; i < NUMREGS; i++){
 		state.reg[i] = 0;
@@ -373,10 +455,10 @@ int main(int argc, char** argv){
 
 		/*------------------ MEM stage ----------------- */
 
-
+		memoryStage(state, newstate);
 
 		/*------------------ WB stage ----------------- */
-
+		writeBackStage(state, newstate);
 
 
 		state = newstate; /* this is the last statement before the end of the loop.
@@ -385,3 +467,33 @@ int main(int argc, char** argv){
 							– AKA "Clock Tick". */
 	}
 }
+
+	// instr = state.MEMWB.instr;
+	// // Write Data to memory
+	// // sw, 
+	// if (opcode(instr) == SW) {
+	// 	data = 
+	// }
+
+	// // Read Data
+	// // lw, 
+	// else if (opcode(instr) == LW) {
+	// 	data = 
+	// }
+
+	// // Pass on data & don't use memory
+	// // add, nand, 
+	// else if (opcode(instr) == ADD || opcode(instr) == NAND) {
+	// 	data = 
+	// }
+
+	// // dont pass on data, dont use memory
+	// // beq, noop
+	// else if (opcode(instr) == BEQ || opcode(instr) == NOOP) {
+	// 	data = 
+	// }
+
+	// // Fall through
+	// else{
+	// 	printf("Instruction not identified in memoryStage, fell through\n", );
+	// }
