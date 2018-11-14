@@ -169,6 +169,50 @@ void printstate(statetype *stateptr){
 		printf("\t\twritedata %d\n", stateptr->WBEND.writedata);
 }
 
+//regDetecting, the register index we want to check
+// if there is a data hazard in the specific buffer
+
+//bufferIndex:
+//      0 -> IFID
+//      1 -> IDEX
+//      2 -> EXMEM
+//      3 -> MEMWB
+//      4 -> WBEND
+int hasDataHazard(statetype state, int bufferIndex, int regDetecting){
+    int instruction;
+
+    if(bufferIndex == 2){
+        //only doing forwarding in EXMEM, MEMWB & WBEND
+        instruction = state.EXMEM.instr;
+    }else if(bufferIndex == 3){
+        instruction = state.MEMWB.instr;
+    }else if(bufferIndex == 4){
+        instruction = state.WBEND.instr;
+    }else{
+        //dont care otherwise
+        return 0;
+    }
+
+    int operation = opcode(instruction);
+    int regcauseHazard;
+    //only ADD, NAND and LW causing the data hazard
+    //otherwise return 0, meaning no hazard
+
+    if(operation == ADD || operation == NAND){
+        regcauseHazard = field2(instruction);
+    }else if(operation == LW){
+        regcauseHazard = field0(instruction);
+    }else{
+        return 0;
+    }
+
+    if(regcauseHazard == regDetecting){
+        return 1;
+    }else{
+        return 0;
+    }
+}
+
 void forwardingUnit(statetype state, statetype newstate){
 	//only use in the execution stage
 
@@ -191,25 +235,49 @@ void forwardingUnit(statetype state, statetype newstate){
 	int regAHazard = 0;
 	int regBHazard = 0;
 
-	if(operation == NOOP){
-		//no doing anything
+	if(operation != ADD || operation != NAND || operation != LW || operation != SW || operation != BEQ){
+		// if the opcode is JALR or NOOP or HALT, do nothing
 		return;
 	}
 
-	//EXMEM
-	int EXMEMopcode= opcode(state.EXMEM.instr);
-	int EXMEMregA = field0(state.EXMEM.instr);
-	int EXMEMregB = field1(state.EXMEM.instr);
-	int EXMEMregDest = field2(state.EXMEM.instr);
+//bufferIndex:
+//      0 -> IFID
+//      1 -> IDEX
+//      2 -> EXMEM
+//      3 -> MEMWB
+//      4 -> WBEND
 
-	if(EXMEMopcode == ADD || EXMEMopcode == NAND){
-		if(EXMEMregDest = regA){
-			
-		}
+	//regA
+	//EXMEM
+	if(regAHazard == 0){
+		regAHazard = hasDataHazard(state, 2, regA);
+	}
+
+	//MEMWB
+	if(regAHazard == 0){
+		regAHazard = hasDataHazard(state, 3, regA);
+	}
+	
+	//WBEND
+	if(regAHazard == 0){
+		regAHazard = hasDataHazard(state, 4, regA);
 	}	
-	
-	
-		
+
+
+	//regB
+	if(regBHazard == 0){
+        regBHazard = hasDataHazard(state, 2, regB);
+    }
+
+    //MEMWB
+    if(regBHazard == 0){
+        regBHazard = hasDataHazard(state, 3, regB);
+    }
+    
+    //WBEND
+    if(regBHazard == 0){
+        regBHazard = hasDataHazard(state, 4, regB);
+    }	
 }
 
 void fetchStage(statetype state, statetype newstate){
