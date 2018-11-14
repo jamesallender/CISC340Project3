@@ -134,7 +134,7 @@ void printstate(statetype *stateptr){
 
 	printf("\tdata memory:\n");
 		for (i=0; i<stateptr->numMemory; i++) {
-			printf("\t\tdatamem[ %d ] %d\n", i, stateptr->datamem[i]);
+			printf("\t\tdatamem[ %d ] %d\n", i, stxateptr->datamem[i]);
 		}
 
 	printf("\tregisters:\n");
@@ -399,6 +399,7 @@ int main(int argc, char** argv){
         /* note that fgets doesn't strip the terminating \n, checking its
            presence would allow to handle lines longer that sizeof(line) */
 		state.instrmem[i] = atoi(line);
+		state.datamem[i] = atoi(line);
 
 		i++;
     }
