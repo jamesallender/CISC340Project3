@@ -172,9 +172,13 @@ void printstate(statetype *stateptr){
 void fetchStage(statetype state, statetype newstate){
 	//set pc in newstate
 	newstate.pc = state.pc + 1;
+	printf("newstate.pc\n");
+	printf("%d\n", newstate.pc);
 	
 	//set fetched num in newstate
 	newstate.fetched = state.fetched + 1;
+	printf("newstate.fetched\n");
+	printf("%d\n", newstate.fetched);
 	
 	//set instruction in IFID buffer in newstate
 	//fetching the new instruction
@@ -184,6 +188,8 @@ void fetchStage(statetype state, statetype newstate){
 	
 	//set pcplu1 in IFID buffer in newstate
 	newstate.IFID.pcplus1 = state.pc + 1;
+	printf("newstate.IFID.pcplus1\n");
+	printf("%d\n", newstate.IFID.pcplus1);
 }
 
 void decodeStage(statetype state, statetype newstate){
@@ -197,6 +203,8 @@ void decodeStage(statetype state, statetype newstate){
 
 	newstate.IDEX.pcplus1 = state.IFID.pcplus1;
 	newstate.IDEX.instr = state.IFID.instr;
+	printf("newstate.IDEX.instr\n");
+	printf("%d\n", newstate.IDEX.instr);
 
 	newstate.IDEX.readregA = field0(state.IFID.instr);
 	newstate.IDEX.readregB = field1(state.IFID.instr);
