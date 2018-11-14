@@ -394,7 +394,7 @@ int main(int argc, char** argv){
 	int i = 0;
 	// loops through input file
 	while (fgets(lineBuffer, 100, fp) !=NULL){
-		state.instrmem[i] = line;
+		state.instrmem[i] = lineBuffer;
 		i++;
 	}	
 
