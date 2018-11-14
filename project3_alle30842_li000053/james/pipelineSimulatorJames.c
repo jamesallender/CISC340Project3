@@ -214,6 +214,8 @@ void decodeStage(statetype state, statetype newstate){
 void executeStage(statetype state, statetype newstate){
 	//set instr in EXMEM buffer in newstate
 	newstate.EXMEM.instr = state.IDEX.instr;
+	printf("newstate.EXMEM.instr\n");
+	printf("%d\n", newstate.EXMEM.instr);
     
 	//set branch target address in EXMEM buffer in newstate
 	newstate.EXMEM.branchtarget = state.IDEX.pcplus1 + state.IDEX.offset;
@@ -261,6 +263,8 @@ void memoryStage(statetype state, statetype newstate){
 	int instr = state.EXMEM.instr;
 	// set the new state MEMWB buffer to the current instruction
 	newstate.MEMWB.instr = instr;
+	printf("newstate.MEMWB.instr\n");
+	printf("%d\n", newstate.MEMWB.instr);
 	// get the alu result
 	int aluresult = state.EXMEM.aluresult;
 
@@ -303,6 +307,8 @@ void writeBackStage(statetype state, statetype newstate){
 	
 	//set instr in WBEND buffer in newstate
 	newstate.WBEND.instr = instr;
+	printf("newstate.WBEND.instr\n");
+	printf("%d\n", newstate.WBEND.instr);
 
 	//set writedata in WBEND buffer in newstate
 	newstate.WBEND.writedata = state.MEMWB.writedata;
