@@ -280,19 +280,19 @@ void forwardingUnit(statetype state, statetype newstate){
     }	
 }
 
-void fetchStage(statetype state, statetype newstate){
+void fetchStage(statetype *state, statetype *newstate){
 	//set pc in newstate
-	newstate.pc = state.pc + 1;
-	
+	newstate->pc = state->pc + 1;
+
 	//set fetched num in newstate
-	newstate.fetched = state.fetched + 1;
+	newstate->fetched = state->fetched + 1;
 	
 	//set instruction in IFID buffer in newstate
 	//fetching the new instruction
-	newstate.IFID.instr = state.instrmem[state.pc];
+	newstate->IFID.instr = state->instrmem[state->pc];
 	
 	//set pcplu1 in IFID buffer in newstate
-	newstate.IFID.pcplus1 = state.pc + 1;
+	newstate->IFID.pcplus1 = state->pc + 1;
 }
 
 void decodeStage(statetype state, statetype newstate){
@@ -569,22 +569,22 @@ int main(int argc, char** argv){
 
 		/*------------------ IF stage ----------------- */
 
-		fetchStage(state, newstate);
+		fetchStage(&state, &newstate);
 
 		/*------------------ ID stage ----------------- */
 
-		decodeStage(state, newstate);
+		decodeStage(&state, &newstate);
 
 		/*------------------ EX stage ----------------- */
 
-		executeStage(state, newstate);
+		executeStage(&state, &newstate);
 
 		/*------------------ MEM stage ----------------- */
 
-		memoryStage(state, newstate);
+		memoryStage(&state, &newstate);
 
 		/*------------------ WB stage ----------------- */
-		writeBackStage(state, newstate);
+		writeBackStage(&state, &newstate);
 
 
 
