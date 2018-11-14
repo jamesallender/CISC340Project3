@@ -171,7 +171,7 @@ void printstate(statetype *stateptr){
 
 void fetchStage(statetype state, statetype newstate){
 	//set pc in newstate
-	newstate.pc = state.pc + 1;
+	newstate->pc = state->pc + 1;
 	printf("newstate.pc\n");
 	printf("%d\n", newstate.pc);
 	
@@ -478,7 +478,7 @@ int main(int argc, char** argv){
 		// 	int writedata;
 		// } WBENDType;
 
-		newstate.pc = state.pc +1;
+		// newstate.pc = state.pc +1;
 
 
 		/*------------------ IF stage ----------------- */
