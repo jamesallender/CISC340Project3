@@ -169,7 +169,7 @@ void printstate(statetype *stateptr){
 		printf("\t\twritedata %d\n", stateptr->WBEND.writedata);
 }
 
-void fetchStage(statetype state, statetype newstate){
+void fetchStage(statetype *state, statetype *newstate){
 	//set pc in newstate
 	newstate->pc = state->pc + 1;
 	printf("newstate.pc\n");
