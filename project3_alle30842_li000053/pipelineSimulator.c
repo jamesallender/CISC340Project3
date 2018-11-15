@@ -213,7 +213,7 @@ int hasDataHazard(statetype state, int bufferIndex, int regDetecting){
     }
 }
 
-void forwardingUnit(statetype state, statetype newstate){
+void forwardingUnit(statetype *state, statetype *newstate){
 	//only use in the execution stage
 
 	//opcodes might cause data hazard
@@ -228,12 +228,12 @@ void forwardingUnit(statetype state, statetype newstate){
 	//Buffer that might contain hazard
 	// EXMEM & MEMWB & WBEND
 
-	int operation = opcode(state.IDEX.instr);
-	int regA = field0(state.IDEX.instr);
-	int regB = field1(state.IDEX.instr);	
+	int instr = state->IDEX.instr;
 
-	int regAHazard = 0;
-	int regBHazard = 0;
+	int operation = opcode(instr);
+	int regA = field0(instr);
+	int regB = field1(instr);	
+
 
 	if(operation != ADD || operation != NAND || operation != LW || operation != SW || operation != BEQ){
 		// if the opcode is JALR or NOOP or HALT, do nothing
@@ -247,37 +247,26 @@ void forwardingUnit(statetype state, statetype newstate){
 //      3 -> MEMWB
 //      4 -> WBEND
 
-	//regA
-	//EXMEM
-	if(regAHazard == 0){
-		regAHazard = hasDataHazard(state, 2, regA);
-	}
+	int regA_hazard_EXMEM = hasDataHazard(state, 2, regA);
+	int regA_hazard_MEMWB = hasDataHazard(state, 3, regA);
+	int regA_hazard_WBEND = hasDataHazard(state, 4, regA);
 
-	//MEMWB
-	if(regAHazard == 0){
-		regAHazard = hasDataHazard(state, 3, regA);
+	int regB_hazard_EXMEM = hasDataHazard(state, 2, regB);
+    int regB_hazard_MEMWB = hasDataHazard(state, 3, regB);
+    int regB_hazard_WBEND = hasDataHazard(state, 4, regB);
+
+	int regA_hazard = regA_hazard_EXMEM && regA_hazard_MEMWB && regA_hazard_WBEND;
+	int regB_hazard = regB_hazard_EXMEM && regB_hazard_MEMWB && regB_hazard_WBEND;
+
+	if(regA_hazard == 0 && regA_hazard == 0){
+		//no hazard at all
+		return;
 	}
 	
-	//WBEND
-	if(regAHazard == 0){
-		regAHazard = hasDataHazard(state, 4, regA);
-	}	
-
-
-	//regB
-	if(regBHazard == 0){
-        regBHazard = hasDataHazard(state, 2, regB);
-    }
-
-    //MEMWB
-    if(regBHazard == 0){
-        regBHazard = hasDataHazard(state, 3, regB);
-    }
-    
-    //WBEND
-    if(regBHazard == 0){
-        regBHazard = hasDataHazard(state, 4, regB);
-    }	
+	//working on this 
+	if(regA_hazard_EXMEM == 1){
+		
+	}
 }
 
 void fetchStage(statetype *state, statetype *newstate){
@@ -586,7 +575,8 @@ int main(int argc, char** argv){
 		/*------------------ WB stage ----------------- */
 		writeBackStage(&state, &newstate);
 
-
+		//calling forwardingUnit right here
+		//so that we can passing the newest data (hazard) before next execute stage
 
 		state = newstate; /* this is the last statement before the end of the loop.
 							It marks the end of the cycle and updates the current
