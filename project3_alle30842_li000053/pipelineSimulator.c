@@ -497,6 +497,8 @@ int main(int argc, char** argv){
         /* note that fgets doesn't strip the terminating \n, checking its
            presence would allow to handle lines longer that sizeof(line) */
 		state.instrmem[i] = atoi(line);
+		state.datamem[i] = atoi(line);
+		
 		i++;
     }
     fclose(fp);
