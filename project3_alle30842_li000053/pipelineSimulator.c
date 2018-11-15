@@ -247,13 +247,13 @@ void forwardingUnit(statetype *state, statetype *newstate){
 //      3 -> MEMWB
 //      4 -> WBEND
 
-	int regA_hazard_EXMEM = hasDataHazard(state, 2, regA);
-	int regA_hazard_MEMWB = hasDataHazard(state, 3, regA);
-	int regA_hazard_WBEND = hasDataHazard(state, 4, regA);
+	int regA_hazard_EXMEM = hasDataHazard(*state, 2, regA);
+	int regA_hazard_MEMWB = hasDataHazard(*state, 3, regA);
+	int regA_hazard_WBEND = hasDataHazard(*state, 4, regA);
 
-	int regB_hazard_EXMEM = hasDataHazard(state, 2, regB);
-    int regB_hazard_MEMWB = hasDataHazard(state, 3, regB);
-    int regB_hazard_WBEND = hasDataHazard(state, 4, regB);
+	int regB_hazard_EXMEM = hasDataHazard(*state, 2, regB);
+    int regB_hazard_MEMWB = hasDataHazard(*state, 3, regB);
+    int regB_hazard_WBEND = hasDataHazard(*state, 4, regB);
 
 	int regA_hazard = regA_hazard_EXMEM && regA_hazard_MEMWB && regA_hazard_WBEND;
 	int regB_hazard = regB_hazard_EXMEM && regB_hazard_MEMWB && regB_hazard_WBEND;
