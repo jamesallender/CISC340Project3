@@ -295,7 +295,7 @@ void fetchStage(statetype *state, statetype *newstate){
 	newstate->IFID.pcplus1 = state->pc + 1;
 }
 
-void decodeStage(statetype state, statetype newstate){
+void decodeStage(statetype *state, statetype *newstate){
 	// typedef struct IDEXstruct{
 	// 	int instr;
 	// 	int pcplus1;
@@ -304,45 +304,45 @@ void decodeStage(statetype state, statetype newstate){
 	// 	int offset;
 	// } IDEXType;
 
-	newstate.IDEX.pcplus1 = state.IFID.pcplus1;
-	newstate.IDEX.instr = state.IFID.instr;
+	newstate->IDEX.pcplus1 = state->IFID.pcplus1;
+	newstate->IDEX.instr = state->IFID.instr;
 
-	newstate.IDEX.readregA = field0(state.IFID.instr);
-	newstate.IDEX.readregB = field1(state.IFID.instr);
-	newstate.IDEX.offset = signExtend(field2(state.IFID.instr));
+	newstate->IDEX.readregA = field0(state->IFID.instr);
+	newstate->IDEX.readregB = field1(state->IFID.instr);
+	newstate->IDEX.offset = signExtend(field2(state->IFID.instr));
 }
 
-void executeStage(statetype state, statetype newstate){
+void executeStage(statetype *state, statetype *newstate){
 	//set instr in EXMEM buffer in newstate
-	newstate.EXMEM.instr = state.IDEX.instr;
+	newstate->EXMEM.instr = state->IDEX.instr;
     
 	//set branch target address in EXMEM buffer in newstate
-	newstate.EXMEM.branchtarget = state.IDEX.pcplus1 + state.IDEX.offset;
+	newstate->EXMEM.branchtarget = state->IDEX.pcplus1 + state->IDEX.offset;
 
 
 	//set ALU result in EXMEM buffer in newstate
-    int operation = opcode(state.IDEX.instr);
+    int operation = opcode(state->IDEX.instr);
 
     if(operation == ADD){
-        newstate.EXMEM.aluresult = state.IDEX.readregA + state.IDEX.readregB;
+        newstate->EXMEM.aluresult = state->IDEX.readregA + state->IDEX.readregB;
     }else if(operation == NAND){
-        newstate.EXMEM.aluresult = ~(state.IDEX.readregA & state.IDEX.readregB);
+        newstate->EXMEM.aluresult = ~(state->IDEX.readregA & state->IDEX.readregB);
     }else if(operation == LW || operation == SW){
-		newstate.EXMEM.aluresult = state.IDEX.readregB + state.IDEX.offset;
+		newstate->EXMEM.aluresult = state->IDEX.readregB + state->IDEX.offset;
     }else if(operation == BEQ){
-		newstate.EXMEM.aluresult = state.IDEX.readregA - state.IDEX.readregB;
+		newstate->EXMEM.aluresult = state->IDEX.readregA - state->IDEX.readregB;
     }else if(operation == NOOP){
-		newstate.EXMEM.aluresult = -1;
+		newstate->EXMEM.aluresult = -1;
     }else{
-		fprintf(stderr,"%s %d\n" ,"FUNCTION: executeStage. REASON: Failed to get opcode from the instruction. INSTR: ", state.IDEX.instr);
-    }
+		fprintf(stderr,"%s %d\n" ,"FUNCTION: executeStage. REASON: Failed to get opcode from the instruction. INSTR: ", state->IDEX.instr);   
+	 }
 
 
 	//set readreg in EXMEM buffer in newstate
-	newstate.EXMEM.readreg = state.IDEX.readregA;
+	newstate->EXMEM.readreg = state->IDEX.readregA;
 }
 
-void memoryStage(statetype state, statetype newstate){
+void memoryStage(statetype *state, statetype *newstate){
 	// typedef struct EXMEMstruct{
 	// 	int instr;
 	// 	int branchtarget;
@@ -359,11 +359,11 @@ void memoryStage(statetype state, statetype newstate){
 	int writeData = 0;
 
 	// Get our instruction from the previous EXMEM buffer
-	int instr = state.EXMEM.instr;
+	int instr = state->EXMEM.instr;
 	// set the new state MEMWB buffer to the current instruction
-	newstate.MEMWB.instr = instr;
+	newstate->MEMWB.instr = instr;
 	// get the alu result
-	int aluresult = state.EXMEM.aluresult;
+	int aluresult = state->EXMEM.aluresult;
 
 	// Get operation
 	int operation = opcode(instr);
@@ -377,36 +377,36 @@ void memoryStage(statetype state, statetype newstate){
 		// If the branch is to be taken
 		if (aluresult == 0){
 			// Set the new states pc to the branch target
-			newstate.pc = state.EXMEM.branchtarget;
+			newstate->pc = state->EXMEM.branchtarget;
 		}
 	}
 	// if the instruction is a LW, get the data from memory
 	else if (operation == LW) {
 		// get the data from memory
-		writeData = state.datamem[aluresult];
+		writeData = state->datamem[aluresult];
 	}
 	// if the instruction is a SW, Write to memory 
 	else if (operation == SW) {
-		newstate.datamem[aluresult] = state.EXMEM.readreg;
+		newstate->datamem[aluresult] = state->EXMEM.readreg;
 	}
 	// for all other functions pass the alu result
 	else{
 		writeData = aluresult;
 	}
 
-	newstate.MEMWB.writedata = writeData;
+	newstate->MEMWB.writedata = writeData;
 }
 
-void writeBackStage(statetype state, statetype newstate){
+void writeBackStage(statetype *state, statetype *newstate){
 
 	// Get instruction
-	int instr = state.MEMWB.instr;
+	int instr = state->MEMWB.instr;
 	
 	//set instr in WBEND buffer in newstate
-	newstate.WBEND.instr = instr;
+	newstate->WBEND.instr = instr;
 
 	//set writedata in WBEND buffer in newstate
-	newstate.WBEND.writedata = state.MEMWB.writedata;
+	newstate->WBEND.writedata = state->MEMWB.writedata;
 
 	//write back to the register file
 	int operation = opcode(instr);
@@ -423,7 +423,7 @@ void writeBackStage(statetype state, statetype newstate){
 	}
 
 	//write back here
-	newstate.reg[regDest] = state.MEMWB.writedata;
+	newstate->reg[regDest] = state->MEMWB.writedata;
 }
 
 int main(int argc, char** argv){
