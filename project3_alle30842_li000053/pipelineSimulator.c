@@ -213,6 +213,28 @@ int hasDataHazard(statetype state, int bufferIndex, int regDetecting){
     }
 }
 
+void forwardingProcess(int hazard_instr, int reg_update, statetype *newstate){
+
+	int hazard_opcode = opcode(hazard_instr);
+	int reg_cause_hazard; 
+
+	if(hazard_opcode == ADD || hazard_opcode == NAND){
+		reg_cause_hazard = field2(hazard_instr);			
+			
+		if(reg_update == reg_cause_hazard){
+			newstate->IDEX.readregA = newstate->EXMEM.aluresult;
+		}
+
+	}else if(hazard_opcode == LW){
+		reg_cause_hazard = field0(hazard_instr);
+	}else{
+		//the rest opcode will not cause hazard
+		//run into some strange case
+		fprintf(stderr, "%s ***", "in forwarding unit, read a instruction that does not have ADD or NAND or LW\n");
+		printinstruction(hazard_instr);
+	}
+}
+
 void forwardingUnit(statetype *state, statetype *newstate){
 	//only use in the execution stage
 
@@ -258,42 +280,58 @@ void forwardingUnit(statetype *state, statetype *newstate){
     int regB_hazard_MEMWB = hasDataHazard(*state, 3, regB);
     int regB_hazard_WBEND = hasDataHazard(*state, 4, regB);
 
-	int regA_hazard = regA_hazard_EXMEM && regA_hazard_MEMWB && regA_hazard_WBEND;
-	int regB_hazard = regB_hazard_EXMEM && regB_hazard_MEMWB && regB_hazard_WBEND;
+	int regA_hazard = regA_hazard_EXMEM || regA_hazard_MEMWB || regA_hazard_WBEND;
+	int regB_hazard = regB_hazard_EXMEM || regB_hazard_MEMWB || regB_hazard_WBEND;
 
 	if(regA_hazard == 0 && regA_hazard == 0){
 		//no hazard at all
 		return;
 	}
 	
-	//working on this 
 	if(regA_hazard_EXMEM == 1){
 		regA_forwarded = 1;
 		
 		int hazard_instr = state->EXMEM.instr;
-		int hazard_opcode = opcode(hazard_instr);
-		int reg_cause_hazard;	
-	
-		if(hazard_opcode == ADD || hazard_opcode == NAND){
-			reg_cause_hazard = field2(hazard_instr);			
-			
-			if(regA == reg_cause_hazard){
-				newstate->IDEX.readregA = newstate->EXMEM.aluresult;
-			}
-
-			if(regB == reg_cause_hazard){
-				newstate->IDEX.readregB = newstate->EXMEM.aluresult;
-			}
-		}else if(hazard_opcode == LW){
-			reg_cause_hazard = field0(hazard_instr);
-		}else{
-			//the rest opcode will not cause hazard
-			//run into some strange case
-			fprintf(stderr, "%s ***", "in forwarding unit, read a instruction that does not have ADD or NAND or LW\n");
-			printinstruction(hazard_instr);
-		}
-
+		forwardingProcess(hazard_instr, regA, newstate);
 	}
+
+	if(regA_hazard_MEMWB == 1 && regA_forwarded == 0){
+		regA_forwarded = 1;
+			
+		int hazard_instr = state->MEMWB.instr;
+		forwardingProcess(hazard_instr, regA, newstate);
+	}
+
+	if(regA_hazard_WBEND == 1 && regA_forwarded == 0){
+		regA_forwarded = 1;
+
+        int hazard_instr = state->WBEND.instr;
+        forwardingProcess(hazard_instr, regA, newstate);
+	}
+
+
+	
+	//regB
+	if(regB_hazard_EXMEM == 1){
+        regB_forwarded = 1;
+
+        int hazard_instr = state->EXMEM.instr;
+        forwardingProcess(hazard_instr, regB, newstate);
+    }
+
+    if(regB_hazard_MEMWB == 1 && regB_forwarded == 0){
+        regB_forwarded = 1;
+
+        int hazard_instr = state->MEMWB.instr;
+        forwardingProcess(hazard_instr, regB, newstate);
+    }
+
+    if(regB_hazard_WBEND == 1 && regB_forwarded == 0){
+        regB_forwarded = 1;
+
+        int hazard_instr = state->WBEND.instr;
+        forwardingProcess(hazard_instr, regB, newstate);
+    }
 }
 
 void fetchStage(statetype *state, statetype *newstate){
