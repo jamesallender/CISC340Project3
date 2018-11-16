@@ -247,6 +247,9 @@ void forwardingUnit(statetype *state, statetype *newstate){
 //      3 -> MEMWB
 //      4 -> WBEND
 
+	int regA_forwarded = 0;
+	int regB_forwarded = 0;
+
 	int regA_hazard_EXMEM = hasDataHazard(*state, 2, regA);
 	int regA_hazard_MEMWB = hasDataHazard(*state, 3, regA);
 	int regA_hazard_WBEND = hasDataHazard(*state, 4, regA);
@@ -265,7 +268,30 @@ void forwardingUnit(statetype *state, statetype *newstate){
 	
 	//working on this 
 	if(regA_hazard_EXMEM == 1){
+		regA_forwarded = 1;
 		
+		int hazard_instr = state->EXMEM.instr;
+		int hazard_opcode = opcode(hazard_instr);
+		int reg_cause_hazard;	
+	
+		if(hazard_opcode == ADD || hazard_opcode == NAND){
+			reg_cause_hazard = field2(hazard_instr);			
+			
+			if(regA == reg_cause_hazard){
+				newstate->IDEX.readregA = newstate->EXMEM.aluresult;
+			}
+
+			if(regB == reg_cause_hazard){
+				newstate->IDEX.readregB = newstate->EXMEM.aluresult;
+			}
+		}else if(hazard_opcode == LW){
+			reg_cause_hazard = field0(hazard_instr);
+		}else{
+			//the rest opcode will not cause hazard
+			//run into some strange case
+			printf(stderr, "%s *** %s", "in forwarding unit, read a instruction that does not have ADD or NAND or LW\n", harzard_instr);
+		}
+
 	}
 }
 
