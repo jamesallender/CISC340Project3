@@ -289,7 +289,8 @@ void forwardingUnit(statetype *state, statetype *newstate){
 		}else{
 			//the rest opcode will not cause hazard
 			//run into some strange case
-			printf(stderr, "%s *** %s", "in forwarding unit, read a instruction that does not have ADD or NAND or LW\n", harzard_instr);
+			fprintf(stderr, "%s ***", "in forwarding unit, read a instruction that does not have ADD or NAND or LW\n");
+			printinstruction(hazard_instr);
 		}
 
 	}
