@@ -508,6 +508,8 @@ void writeBackStage(statetype *state, statetype *newstate){
 		return;
 	}
 
+	printf("regDest: %d\n", field1(regDest));
+
 	//write back here
 	newstate->reg[regDest] = state->MEMWB.writedata;
 }
