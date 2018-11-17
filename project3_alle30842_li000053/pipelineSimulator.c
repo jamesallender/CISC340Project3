@@ -390,7 +390,7 @@ void LWForwarding(statetype *state, statetype *newstate, int data_expired, int b
 			//set fetched num in newstate
 			newstate->fetched = state->fetched;
 
-			
+
 			newstate->IFID = state->IFID;
 			newstate->IDEX = state->IDEX;
 
