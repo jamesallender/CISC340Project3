@@ -67,6 +67,8 @@ typedef struct statestruct{
 
 int bubbleInsertions = 0;
 
+int noopBubbleFlag = 0;
+
 void printstate(statetype *stateptr);
 void printinstruction(int instr);
 int signExtend(int num);
@@ -250,7 +252,7 @@ void ITypeForwarding(statetype *state, statetype *newstate, int data_expired, in
 		//forwarding writedata in MEMWB
 		if(buffer_cause_hazard == 3){
 			newstate->IDEX.readregA = state->MEMWB.writedata;
-			return
+			return;
 		}
 
 		//forwarding writedata in WBEND
@@ -294,10 +296,97 @@ void LWForwarding(statetype *state, statetype *newstate, int data_expired, int b
 	//      3 -> MEMWB
 	//      4 -> WBEND
 
+	//readregA data expired
+	if(data_expired == 1){
 
+		//data is in EXMEM, set global variable noopBubbleFlag
+		if(buffer_cause_hazard == 2){
+			noopBubbleFlag = 1;
+
+			//pause IFID and IDEX
+			newstate->IFID = state->IFID;
+			newstate->IDEX = state->IDEX;
+
+			//keep executing data in all other buffer
+			//but install noop instructions after LW instruction
+			newstate->EXMEM.instr = NOOPINSTRUCTION;
+			newstate->EXMEM.aluresult = 0;
+			newstate->EXMEM.branchtarget = 0;
+			newstate->EXMEM.readreg = 0;
+		}
+
+		//data is in MEMWB, set global variable noopBubbleFlag
+		if(buffer_cause_hazard == 3){
+			noopBubbleFlag = 1;
+
+			//pause IFID and IDEX
+			newstate->IFID = state->IFID;
+			newstate->IDEX = state->IDEX;
+
+			//keep executing data in all other buffer
+			//but install noop instructions after LW instruction
+			newstate->EXMEM.instr = NOOPINSTRUCTION;
+			newstate->EXMEM.aluresult = 0;
+			newstate->EXMEM.branchtarget = 0;
+			newstate->EXMEM.readreg = 0;
+		}
+
+		//data is in WBEND, no need for stall
+		if(buffer_cause_hazard == 4){
+			newstate->IDEX.readregB = state->WBEND.writedata;
+		}
+	}
+
+
+	//readregB data expired
+	if(data_expired == 2){
+
+		//data is in EXMEM, set global variable noopBubbleFlag
+		if(buffer_cause_hazard == 2){
+			noopBubbleFlag = 1;
+
+			//pause IFID and IDEX
+			newstate->IFID = state->IFID;
+			newstate->IDEX = state->IDEX;
+
+			//keep executing data in all other buffer
+			//but install noop instructions after LW instruction
+			newstate->EXMEM.instr = NOOPINSTRUCTION;
+			newstate->EXMEM.aluresult = 0;
+			newstate->EXMEM.branchtarget = 0;
+			newstate->EXMEM.readreg = 0;
+
+		}
+
+		//data is in MEMWB, set global variable noopBubbleFlag
+		if(buffer_cause_hazard == 3){
+			noopBubbleFlag = 1;
+			newstate->IFID = state->IFID;
+			newstate->IDEX = state->IDEX;
+
+			//pause IFID and IDEX
+			newstate->IFID = state->IFID;
+			newstate->IDEX = state->IDEX;
+
+			//keep executing data in all other buffer
+			//but install noop instructions after LW instruction
+			newstate->EXMEM.instr = NOOPINSTRUCTION;
+			newstate->EXMEM.aluresult = 0;
+			newstate->EXMEM.branchtarget = 0;
+			newstate->EXMEM.readreg = 0;
+		}
+
+		//data is in WBEND, no need for stall
+		if(buffer_cause_hazard == 4){
+			newstate->IDEX.readregB = state->WBEND.writedata;
+		}
+	}
 }
 
-void forwardingUnit(statetype *state, statetype *newstate){
+
+//return 1 if there is one or more hazard
+//otherwise return 0
+int forwardingUnit(statetype *state, statetype *newstate){
 	//only use in the execution stage
 
 	//opcodes might cause data hazard
@@ -321,7 +410,7 @@ void forwardingUnit(statetype *state, statetype *newstate){
 
 	if(operation == JALR || operation == NOOP || operation == HALT){
 		// if the opcode is JALR or NOOP or HALT, do nothing
-		return;
+		return 0;
 	}
 
 	//bufferIndex:
@@ -347,7 +436,7 @@ void forwardingUnit(statetype *state, statetype *newstate){
 
 	if(regA_hazard == 0 && regB_hazard == 0){
 		//no hazard at all
-		return;
+		return 0;
 	}
 
 	//has data hazard, in EXMEM
@@ -446,6 +535,9 @@ void forwardingUnit(statetype *state, statetype *newstate){
 
 		regB_forwarded = 1;
 	}
+
+
+	return (regA_forwarded || regB_forwarded);
 
 }
 
