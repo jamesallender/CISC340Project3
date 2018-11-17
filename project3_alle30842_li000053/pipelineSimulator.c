@@ -65,6 +65,8 @@ typedef struct statestruct{
 	int mispreds; /* Number of branch mispredictions*/
 } statetype;
 
+int bubbleInsertions = 0;
+
 void printstate(statetype *stateptr);
 void printinstruction(int instr);
 int signExtend(int num);
@@ -72,7 +74,17 @@ int field0(int instruction);
 int field1(int instruction);
 int field2(int instruction);
 int opcode(int instruction);
+int isInstruction(int instruction);
 
+// Check if a value is an instruction
+int isInstruction(int instruction){
+
+	if (opcode(instruction) != ADD && opcode(instruction) != NAND && opcode(instruction) != LW && opcode(instruction) != SW && 
+		opcode(instruction) != BEQ && opcode(instruction) != JALR && opcode(instruction) != HALT && opcode(instruction) != NOOP){
+		return 0;
+	}
+	return 1;
+}
 
 
 int field0(int instruction){
@@ -222,7 +234,7 @@ void forwardingProcess(int hazard_instr, int reg_update, statetype *newstate){
 		reg_cause_hazard = field2(hazard_instr);			
 			
 		if(reg_update == reg_cause_hazard){
-			newstate->IDEX.readregA = newstate->EXMEM.aluresult;
+			x
 		}
 
 	}else if(hazard_opcode == LW){
@@ -335,15 +347,20 @@ void forwardingUnit(statetype *state, statetype *newstate){
 }
 
 void fetchStage(statetype *state, statetype *newstate){
+	instruction state->instrmem[state->pc];
+
 	//set pc in newstate
 	newstate->pc = state->pc + 1;
 
 	//set fetched num in newstate
-	newstate->fetched = state->fetched + 1;
+	if (isInstruction(instruction) == 1){
+		newstate->fetched = state->fetched + 1;
+	}	
+
 	
 	//set instruction in IFID buffer in newstate
 	//fetching the new instruction
-	newstate->IFID.instr = state->instrmem[state->pc];
+	newstate->IFID.instr = instruction;
 	
 	//set pcplu1 in IFID buffer in newstate
 	newstate->IFID.pcplus1 = state->pc + 1;
@@ -461,6 +478,9 @@ void writeBackStage(statetype *state, statetype *newstate){
 
 	//set writedata in WBEND buffer in newstate
 	newstate->WBEND.writedata = state->MEMWB.writedata;
+
+	// increse retired
+	newstate.retired = state.retired + 1;
 
 	//write back to the register file
 	int operation = opcode(instr);
@@ -583,13 +603,14 @@ int main(int argc, char** argv){
 			printf("machine halted\n");
 			printf("total of %d cycles executed\n", state.cycles);
 			printf("total of %d instructions fetched\n", state.fetched);
-			printf("total of %d instructions retired\n", state.retired);
+			printf("total of %d instructions retired\n", (state.retired - bubbleInsertions - (state.mispreds * 2)));
 			printf("total of %d branches executed\n", state.branches);
 			printf("total of %d branch mispredictions\n", state.mispreds);
 			exit(0);
 		}
 		newstate = state;
-		newstate.cycles++;
+
+		newstate.cycles = state.cycles + 1;
 
 
 		// typedef struct IFIDstruct{
