@@ -65,6 +65,8 @@ typedef struct statestruct{
 	int mispreds; /* Number of branch mispredictions*/
 } statetype;
 
+int bubbleInsertions = 0;
+
 void printstate(statetype *stateptr);
 void printinstruction(int instr);
 int signExtend(int num);
@@ -72,7 +74,17 @@ int field0(int instruction);
 int field1(int instruction);
 int field2(int instruction);
 int opcode(int instruction);
+int isInstruction(int instruction);
 
+// Check if a value is an instruction
+int isInstruction(int instruction){
+
+	if (opcode(instruction) != ADD && opcode(instruction) != NAND && opcode(instruction) != LW && opcode(instruction) != SW && 
+		opcode(instruction) != BEQ && opcode(instruction) != JALR && opcode(instruction) != HALT && opcode(instruction) != NOOP){
+		return 0;
+	}
+	return 1;
+}
 
 
 int field0(int instruction){
@@ -213,7 +225,29 @@ int hasDataHazard(statetype state, int bufferIndex, int regDetecting){
     }
 }
 
-void forwardingUnit(statetype state, statetype newstate){
+void forwardingProcess(int hazard_instr, int reg_update, statetype *newstate){
+
+	int hazard_opcode = opcode(hazard_instr);
+	int reg_cause_hazard; 
+
+	if(hazard_opcode == ADD || hazard_opcode == NAND){
+		reg_cause_hazard = field2(hazard_instr);			
+			
+		if(reg_update == reg_cause_hazard){
+			newstate->IDEX.readregA = newstate->EXMEM.aluresult;
+		}
+
+	}else if(hazard_opcode == LW){
+		reg_cause_hazard = field0(hazard_instr);
+	}else{
+		//the rest opcode will not cause hazard
+		//run into some strange case
+		fprintf(stderr, "%s ***", "in forwarding unit, read a instruction that does not have ADD or NAND or LW\n");
+		printinstruction(hazard_instr);
+	}
+}
+
+void forwardingUnit(statetype *state, statetype *newstate){
 	//only use in the execution stage
 
 	//opcodes might cause data hazard
@@ -228,12 +262,12 @@ void forwardingUnit(statetype state, statetype newstate){
 	//Buffer that might contain hazard
 	// EXMEM & MEMWB & WBEND
 
-	int operation = opcode(state.IDEX.instr);
-	int regA = field0(state.IDEX.instr);
-	int regB = field1(state.IDEX.instr);	
+	int instr = state->IDEX.instr;
 
-	int regAHazard = 0;
-	int regBHazard = 0;
+	int operation = opcode(instr);
+	int regA = field0(instr);
+	int regB = field1(instr);	
+
 
 	if(operation != ADD || operation != NAND || operation != LW || operation != SW || operation != BEQ){
 		// if the opcode is JALR or NOOP or HALT, do nothing
@@ -247,49 +281,86 @@ void forwardingUnit(statetype state, statetype newstate){
 //      3 -> MEMWB
 //      4 -> WBEND
 
-	//regA
-	//EXMEM
-	if(regAHazard == 0){
-		regAHazard = hasDataHazard(state, 2, regA);
-	}
+	int regA_forwarded = 0;
+	int regB_forwarded = 0;
 
-	//MEMWB
-	if(regAHazard == 0){
-		regAHazard = hasDataHazard(state, 3, regA);
+	int regA_hazard_EXMEM = hasDataHazard(*state, 2, regA);
+	int regA_hazard_MEMWB = hasDataHazard(*state, 3, regA);
+	int regA_hazard_WBEND = hasDataHazard(*state, 4, regA);
+
+	int regB_hazard_EXMEM = hasDataHazard(*state, 2, regB);
+    int regB_hazard_MEMWB = hasDataHazard(*state, 3, regB);
+    int regB_hazard_WBEND = hasDataHazard(*state, 4, regB);
+
+	int regA_hazard = regA_hazard_EXMEM || regA_hazard_MEMWB || regA_hazard_WBEND;
+	int regB_hazard = regB_hazard_EXMEM || regB_hazard_MEMWB || regB_hazard_WBEND;
+
+	if(regA_hazard == 0 && regA_hazard == 0){
+		//no hazard at all
+		return;
 	}
 	
-	//WBEND
-	if(regAHazard == 0){
-		regAHazard = hasDataHazard(state, 4, regA);
-	}	
+	if(regA_hazard_EXMEM == 1){
+		regA_forwarded = 1;
+		
+		int hazard_instr = state->EXMEM.instr;
+		forwardingProcess(hazard_instr, regA, newstate);
+	}
+
+	if(regA_hazard_MEMWB == 1 && regA_forwarded == 0){
+		regA_forwarded = 1;
+			
+		int hazard_instr = state->MEMWB.instr;
+		forwardingProcess(hazard_instr, regA, newstate);
+	}
+
+	if(regA_hazard_WBEND == 1 && regA_forwarded == 0){
+		regA_forwarded = 1;
+
+        int hazard_instr = state->WBEND.instr;
+        forwardingProcess(hazard_instr, regA, newstate);
+	}
 
 
+	
 	//regB
-	if(regBHazard == 0){
-        regBHazard = hasDataHazard(state, 2, regB);
+	if(regB_hazard_EXMEM == 1){
+        regB_forwarded = 1;
+
+        int hazard_instr = state->EXMEM.instr;
+        forwardingProcess(hazard_instr, regB, newstate);
     }
 
-    //MEMWB
-    if(regBHazard == 0){
-        regBHazard = hasDataHazard(state, 3, regB);
+    if(regB_hazard_MEMWB == 1 && regB_forwarded == 0){
+        regB_forwarded = 1;
+
+        int hazard_instr = state->MEMWB.instr;
+        forwardingProcess(hazard_instr, regB, newstate);
     }
-    
-    //WBEND
-    if(regBHazard == 0){
-        regBHazard = hasDataHazard(state, 4, regB);
-    }	
+
+    if(regB_hazard_WBEND == 1 && regB_forwarded == 0){
+        regB_forwarded = 1;
+
+        int hazard_instr = state->WBEND.instr;
+        forwardingProcess(hazard_instr, regB, newstate);
+    }
 }
 
 void fetchStage(statetype *state, statetype *newstate){
+	int instruction = state->instrmem[state->pc];
+
 	//set pc in newstate
 	newstate->pc = state->pc + 1;
 
 	//set fetched num in newstate
-	newstate->fetched = state->fetched + 1;
+	if (instruction != 0){
+		newstate->fetched = state->fetched + 1;
+	}	
+
 	
 	//set instruction in IFID buffer in newstate
 	//fetching the new instruction
-	newstate->IFID.instr = state->instrmem[state->pc];
+	newstate->IFID.instr = instruction;
 	
 	//set pcplu1 in IFID buffer in newstate
 	newstate->IFID.pcplus1 = state->pc + 1;
@@ -408,6 +479,9 @@ void writeBackStage(statetype *state, statetype *newstate){
 	//set writedata in WBEND buffer in newstate
 	newstate->WBEND.writedata = state->MEMWB.writedata;
 
+	// increse retired
+	newstate->retired = state->retired + 1;
+
 	//write back to the register file
 	int operation = opcode(instr);
 	int regDest;
@@ -508,6 +582,8 @@ int main(int argc, char** argv){
         /* note that fgets doesn't strip the terminating \n, checking its
            presence would allow to handle lines longer that sizeof(line) */
 		state.instrmem[i] = atoi(line);
+		state.datamem[i] = atoi(line);
+		
 		i++;
     }
     fclose(fp);
@@ -527,13 +603,14 @@ int main(int argc, char** argv){
 			printf("machine halted\n");
 			printf("total of %d cycles executed\n", state.cycles);
 			printf("total of %d instructions fetched\n", state.fetched);
-			printf("total of %d instructions retired\n", state.retired);
+			printf("total of %d instructions retired\n", (state.retired - bubbleInsertions - (state.mispreds * 2)));
 			printf("total of %d branches executed\n", state.branches);
 			printf("total of %d branch mispredictions\n", state.mispreds);
 			exit(0);
 		}
 		newstate = state;
-		newstate.cycles++;
+
+		newstate.cycles = state.cycles + 1;
 
 
 		// typedef struct IFIDstruct{
@@ -586,7 +663,8 @@ int main(int argc, char** argv){
 		/*------------------ WB stage ----------------- */
 		writeBackStage(&state, &newstate);
 
-
+		//calling forwardingUnit right here
+		//so that we can passing the newest data (hazard) before next execute stage
 
 		state = newstate; /* this is the last statement before the end of the loop.
 							It marks the end of the cycle and updates the current
