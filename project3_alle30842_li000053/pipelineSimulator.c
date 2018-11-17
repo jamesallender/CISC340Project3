@@ -605,7 +605,7 @@ void executeStage(statetype *state, statetype *newstate){
     }else if(operation == BEQ){
 		newstate->EXMEM.aluresult = state->IDEX.readregA - state->IDEX.readregB;
     }else if(operation == NOOP){
-		newstate->EXMEM.aluresult = -1;
+		newstate->EXMEM.aluresult = 0;
     }else{
 		fprintf(stderr,"%s %d\n" ,"FUNCTION: executeStage. REASON: Failed to get opcode from the instruction. INSTR: ", state->IDEX.instr);   
 	 }
