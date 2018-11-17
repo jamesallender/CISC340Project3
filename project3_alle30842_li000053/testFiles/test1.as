@@ -9,7 +9,9 @@
 	add	3	1	2
 	noop
 	noop
+	noop
 	add	3	3	2
+	noop
 	noop
 	noop
 	add	3	3	2
