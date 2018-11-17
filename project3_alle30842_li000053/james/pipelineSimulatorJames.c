@@ -599,20 +599,14 @@ void decodeStage(statetype *state, statetype *newstate){
 
 void executeStage(statetype *state, statetype *newstate){
 
-	forwardingUnit(state, newstate);
-	// int hazard = forwardingUnit(state, newstate);
-
-	// if(hazard == 1){
-
-	// }else{
-
-	// }
 	//set instr in EXMEM buffer in newstate
 	newstate->EXMEM.instr = state->IDEX.instr;
     
 	//set branch target address in EXMEM buffer in newstate
 	newstate->EXMEM.branchtarget = state->IDEX.pcplus1 + state->IDEX.offset;
 
+	// Do forwarding
+	forwardingUnit(state, newstate);
 
 	//set ALU result in EXMEM buffer in newstate
     int operation = opcode(state->IDEX.instr);
@@ -631,6 +625,7 @@ void executeStage(statetype *state, statetype *newstate){
 		fprintf(stderr,"%s %d\n" ,"FUNCTION: executeStage. REASON: Failed to get opcode from the instruction. INSTR: ", state->IDEX.instr);   
 	 }
 
+	printf("newstate->EXMEM.aluresult: %d\n", newstate->EXMEM.aluresult);
 
 	//set readreg in EXMEM buffer in newstate
 	newstate->EXMEM.readreg = state->IDEX.readregA;
@@ -658,6 +653,8 @@ void memoryStage(statetype *state, statetype *newstate){
 	newstate->MEMWB.instr = instr;
 	// get the alu result
 	int aluresult = state->EXMEM.aluresult;
+
+	printf("state->EXMEM.aluresult: %d\n", state->EXMEM.aluresult);
 
 	// Get operation
 	int operation = opcode(instr);
@@ -691,6 +688,8 @@ void memoryStage(statetype *state, statetype *newstate){
 		writeData = aluresult;
 	}
 
+	printf("writeData: %d\n", writeData);
+
 	newstate->MEMWB.writedata = writeData;
 }
 
@@ -711,6 +710,8 @@ void writeBackStage(statetype *state, statetype *newstate){
 	//write back to the register file
 	int operation = opcode(instr);
 	int regDest;
+
+	printf("state->MEMWB.writedata: %d\n", state->MEMWB.writedata);
 
 	if(operation == ADD || operation == NAND){
 		int regDest = field2(instr);
