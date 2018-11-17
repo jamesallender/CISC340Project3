@@ -446,7 +446,7 @@ void memoryStage(statetype *state, statetype *newstate){
 	int operation = opcode(instr);
 
 	// If instruction is a NOOP
-	if(operation ==  NOOP){
+	if(operation ==  NOOP || operation == HALT){
 		writeData = 0;
 	}
 	// If instruction is a BEQ
