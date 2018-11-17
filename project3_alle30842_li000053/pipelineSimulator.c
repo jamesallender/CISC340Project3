@@ -586,6 +586,15 @@ void decodeStage(statetype *state, statetype *newstate){
 }
 
 void executeStage(statetype *state, statetype *newstate){
+
+	forwardingUnit(state, newstate);
+	// int hazard = forwardingUnit(state, newstate);
+
+	// if(hazard == 1){
+
+	// }else{
+
+	// }
 	//set instr in EXMEM buffer in newstate
 	newstate->EXMEM.instr = state->IDEX.instr;
     
