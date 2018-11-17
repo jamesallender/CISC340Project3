@@ -592,11 +592,11 @@ void decodeStage(statetype *state, statetype *newstate){
 	newstate->IDEX.pcplus1 = state->IFID.pcplus1;
 	newstate->IDEX.instr = state->IFID.instr;
 
-	newstate->IDEX.readregA = field0(state->IFID.instr);
+	newstate->IDEX.readregA = state->reg[field0(state->IFID.instr)];
 	printf("newstate->IDEX.readregA : %d\n", field0(state->IFID.instr));
 	printf("newstate->IDEX.readregA : %d\n", newstate->IDEX.readregA);
 
-	newstate->IDEX.readregB = field1(state->IFID.instr);
+	newstate->IDEX.readregB = state->reg[field1(state->IFID.instr)];
 	printf("newstate->IDEX.readregB: %d\n", field1(state->IFID.instr));
 	printf("newstate->IDEX.readregB: %d\n", newstate->IDEX.readregB);
 
