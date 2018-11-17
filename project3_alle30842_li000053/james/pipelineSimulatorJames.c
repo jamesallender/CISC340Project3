@@ -82,6 +82,7 @@ int isInstruction(int instruction){
 	int returnVal = 1;
 
 	// This will not work for an add 0 0 0s
+	if (state.inst)
 	if (instruction == 0 || (opcode(instruction) != ADD && opcode(instruction) != NAND && opcode(instruction) != LW && opcode(instruction) != SW && 
 		opcode(instruction) != BEQ && opcode(instruction) != JALR && opcode(instruction) != HALT && opcode(instruction) != NOOP)){
 		returnVal = 0;
@@ -358,9 +359,9 @@ void fetchStage(statetype *state, statetype *newstate){
 	newstate->pc = state->pc + 1;
 
 	//set fetched num in newstate
-	if (isInstruction(instruction) == 1){
-		newstate->fetched = state->fetched + 1;
-	}	
+	// if (isInstruction(instruction) == 1){
+	newstate->fetched = state->fetched + 1;
+	// }	
 
 	
 	//set instruction in IFID buffer in newstate
@@ -454,6 +455,9 @@ void memoryStage(statetype *state, statetype *newstate){
 		if (aluresult == 0){
 			// Set the new states pc to the branch target
 			newstate->pc = state->EXMEM.branchtarget;
+			newstate->mispreds = stat->mispreds + 1;
+			newstate->IFID.instr = NOOPINSTRUCTION;
+			newstate->IDEX.instr = NOOPINSTRUCTION;
 		}
 	}
 	// if the instruction is a LW, get the data from memory
@@ -491,6 +495,9 @@ void writeBackStage(statetype *state, statetype *newstate){
 	int operation = opcode(instr);
 	int regDest;
 
+	printf("field0: %d\n", field0(instr));
+	printf("field1: %d\n", field1(instr));
+	printf("field2: %d\n", field2(instr));
 	if(operation == ADD || operation == NAND){
 		int regDest = field2(instr);
 	}else if(operation == LW){
@@ -607,7 +614,9 @@ int main(int argc, char** argv){
 		if(HALT == opcode(state.MEMWB.instr)) {
 			printf("machine halted\n");
 			printf("total of %d cycles executed\n", state.cycles);
-			printf("total of %d instructions fetched\n", state.fetched);
+			// -3 to account for 'instructions' fetched befor HALT hit
+			printf("total of %d instructions fetched\n", (state.fetched) - 3);
+			// retired - the number of bubles inserted - the number of branch mispradictions * 2 for the 2 noop's loded per misprediciton
 			printf("total of %d instructions retired\n", (state.retired - bubbleInsertions - (state.mispreds * 2)));
 			printf("total of %d branches executed\n", state.branches);
 			printf("total of %d branch mispredictions\n", state.mispreds);
