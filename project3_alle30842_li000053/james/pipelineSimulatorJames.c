@@ -81,9 +81,9 @@ int isInstruction(int instruction){
 	printf("instruction: %d\n", instruction);
 	int returnVal = 1;
 
-	// This will not work for an add 0 0 0
-	if ((opcode(instruction) != ADD && opcode(instruction) != NAND && opcode(instruction) != LW && opcode(instruction) != SW && 
-		opcode(instruction) != BEQ && opcode(instruction) != JALR && opcode(instruction) != HALT && opcode(instruction) != NOOP) && instruction == 0){
+	// This will not work for an add 0 0 0s
+	if (instruction == 0 && (opcode(instruction) != ADD && opcode(instruction) != NAND && opcode(instruction) != LW && opcode(instruction) != SW && 
+		opcode(instruction) != BEQ && opcode(instruction) != JALR && opcode(instruction) != HALT && opcode(instruction) != NOOP)){
 		returnVal = 0;
 
 	}
