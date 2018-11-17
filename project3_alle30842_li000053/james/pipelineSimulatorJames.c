@@ -447,6 +447,7 @@ int forwardingUnit(statetype *state, statetype *newstate){
 
 	//has data hazard, in EXMEM
 	if(regA_hazard_EXMEM == 1){
+		printf("regA_hazard_EXMEM");
 		int hazard_instr = state->EXMEM.instr;
 		int hazard_opcode = opcode(hazard_instr);
 
@@ -463,6 +464,7 @@ int forwardingUnit(statetype *state, statetype *newstate){
 	}
 
 	if(regA_hazard_MEMWB == 1 && regA_forwarded == 0){
+		printf("regA_hazard_MEMWB");
 		int hazard_instr = state->MEMWB.instr;
 		int hazard_opcode = opcode(hazard_instr);
 
@@ -479,6 +481,7 @@ int forwardingUnit(statetype *state, statetype *newstate){
 	}
 
 	if(regA_hazard_WBEND == 1 && regA_forwarded == 0){
+		printf("regA_hazard_WBEND");
 		int hazard_instr = state->WBEND.instr;
 		int hazard_opcode = opcode(hazard_instr);
 
@@ -495,6 +498,7 @@ int forwardingUnit(statetype *state, statetype *newstate){
 	}
 
 	if(regB_hazard_EXMEM == 1){
+		printf("regB_hazard_EXMEM");
 		int hazard_instr = state->EXMEM.instr;
 		int hazard_opcode = opcode(hazard_instr);
 
@@ -511,6 +515,7 @@ int forwardingUnit(statetype *state, statetype *newstate){
 	}
 
 	if(regB_hazard_MEMWB == 1 && regB_forwarded == 0){
+		printf("regB_hazard_MEMWB");
 		int hazard_instr = state->MEMWB.instr;
 		int hazard_opcode = opcode(hazard_instr);
 
@@ -527,6 +532,7 @@ int forwardingUnit(statetype *state, statetype *newstate){
 	}
 
 	if(regB_hazard_WBEND == 1 && regB_forwarded == 0){
+		printf("regB_hazard_WBEND");
 		int hazard_instr = state->WBEND.instr;
 		int hazard_opcode = opcode(hazard_instr);
 
