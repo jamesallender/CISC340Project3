@@ -347,7 +347,7 @@ void forwardingUnit(statetype *state, statetype *newstate){
 }
 
 void fetchStage(statetype *state, statetype *newstate){
-	instruction state->instrmem[state->pc];
+	int instruction state->instrmem[state->pc];
 
 	//set pc in newstate
 	newstate->pc = state->pc + 1;
