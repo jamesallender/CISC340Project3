@@ -83,7 +83,9 @@ int isInstruction(int instruction){
 		opcode(instruction) != BEQ && opcode(instruction) != JALR && opcode(instruction) != HALT && opcode(instruction) != NOOP){
 		return 0;
 	}
-	return 1;
+	else{
+		return 1;
+	}
 }
 
 
@@ -353,7 +355,7 @@ void fetchStage(statetype *state, statetype *newstate){
 	newstate->pc = state->pc + 1;
 
 	//set fetched num in newstate
-	if (instruction != 0){
+	if (isInstruction(instruction) == 1){
 		newstate->fetched = state->fetched + 1;
 	}	
 
