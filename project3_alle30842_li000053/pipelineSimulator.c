@@ -611,19 +611,12 @@ void decodeStage(statetype *state, statetype *newstate){
 
 void executeStage(statetype *state, statetype *newstate){
 
-	forwardingUnit(state, newstate);
-	// int hazard = forwardingUnit(state, newstate);
-
-	// if(hazard == 1){
-
-	// }else{
-
-	// }
-	//set instr in EXMEM buffer in newstate
 	newstate->EXMEM.instr = state->IDEX.instr;
     
 	//set branch target address in EXMEM buffer in newstate
 	newstate->EXMEM.branchtarget = state->IDEX.pcplus1 + state->IDEX.offset;
+
+	forwardingUnit(state, newstate);
 
 
 	//set ALU result in EXMEM buffer in newstate
