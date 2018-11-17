@@ -495,18 +495,13 @@ void writeBackStage(statetype *state, statetype *newstate){
 	int operation = opcode(instr);
 	int regDest;
 
-	printf("field0: %d\n", field0(instr));
-	printf("field1: %d\n", field1(instr));
-	printf("field2: %d\n", field2(instr));
 	if(operation == ADD || operation == NAND){
 		int regDest = field2(instr);
 		//write back here
 		newstate->reg[regDest] = state->MEMWB.writedata;
-		printf("add/nand regDest: %d\n", regDest);
 	}else if(operation == LW){
 		int regDest = field0(instr);
 		newstate->reg[regDest] = state->MEMWB.writedata;
-		printf("lw regDest: %d\n", regDest);
 	}
 }
 
@@ -615,7 +610,8 @@ int main(int argc, char** argv){
 			// -3 to account for 'instructions' fetched befor HALT hit
 			printf("total of %d instructions fetched\n", (state.fetched) - 3);
 			// retired - the number of bubles inserted - the number of branch mispradictions * 2 for the 2 noop's loded per misprediciton
-			printf("total of %d instructions retired\n", (state.retired - bubbleInsertions - (state.mispreds * 2)));
+			// -3 to acount for 3 stages of noting
+			printf("total of %d instructions retired\n", (state.retired - bubbleInsertions - (state.mispreds * 2) - 3));
 			printf("total of %d branches executed\n", state.branches);
 			printf("total of %d branch mispredictions\n", state.mispreds);
 			exit(0);
