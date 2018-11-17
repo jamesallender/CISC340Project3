@@ -234,7 +234,7 @@ void forwardingProcess(int hazard_instr, int reg_update, statetype *newstate){
 		reg_cause_hazard = field2(hazard_instr);			
 			
 		if(reg_update == reg_cause_hazard){
-			x
+			newstate->IDEX.readregA = newstate->EXMEM.aluresult;
 		}
 
 	}else if(hazard_opcode == LW){
@@ -347,7 +347,7 @@ void forwardingUnit(statetype *state, statetype *newstate){
 }
 
 void fetchStage(statetype *state, statetype *newstate){
-	int instruction state->instrmem[state->pc];
+	int instruction = state->instrmem[state->pc];
 
 	//set pc in newstate
 	newstate->pc = state->pc + 1;
@@ -480,7 +480,7 @@ void writeBackStage(statetype *state, statetype *newstate){
 	newstate->WBEND.writedata = state->MEMWB.writedata;
 
 	// increse retired
-	newstate.retired = state.retired + 1;
+	newstate->retired = state->retired + 1;
 
 	//write back to the register file
 	int operation = opcode(instr);
