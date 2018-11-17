@@ -232,7 +232,7 @@ int hasDataHazard(statetype state, int bufferIndex, int regDetecting){
     }
 }
 
-void ITypeForwarding(statetype *state, statetype *newstate, int data_expired, int buffer_cause_hazard){
+void ->RTypeForwarding(statetype *state, statetype *newstate, int data_expired, int buffer_cause_hazard){
 	//data_expired:
 	//		1 -> readregA
 	//		2 -> readregB
@@ -451,11 +451,11 @@ int forwardingUnit(statetype *state, statetype *newstate){
 		int hazard_opcode = opcode(hazard_instr);
 
 		if(hazard_opcode == ADD || hazard_opcode == NAND){
-			ITypeForwarding(state, newstate, 1, 2);
+			->RTypeForwarding(state, newstate, 1, 2);
 		}else if(hazard_opcode == LW){
 			LWForwarding(state, newstate, 1, 2);
 		}else{
-			fprintf(stderr, "%s \n", "program did not call neither ITypeForwarding or LWForwarding");
+			fprintf(stderr, "%s \n", "program did not call neither ->RTypeForwarding or LWForwarding");
 			printinstruction(hazard_instr);
 		}
 
@@ -467,11 +467,11 @@ int forwardingUnit(statetype *state, statetype *newstate){
 		int hazard_opcode = opcode(hazard_instr);
 
 		if(hazard_opcode == ADD || hazard_opcode == NAND){
-			ITypeForwarding(state, newstate, 1, 3);
+			->RTypeForwarding(state, newstate, 1, 3);
 		}else if(hazard_opcode == LW){
 			LWForwarding(state, newstate, 1, 3);
 		}else{
-			fprintf(stderr, "%s \n", "program did not call neither ITypeForwarding or LWForwarding");
+			fprintf(stderr, "%s \n", "program did not call neither ->RTypeForwarding or LWForwarding");
 			printinstruction(hazard_instr);
 		}
 
@@ -483,11 +483,11 @@ int forwardingUnit(statetype *state, statetype *newstate){
 		int hazard_opcode = opcode(hazard_instr);
 
 		if(hazard_opcode == ADD || hazard_opcode == NAND){
-			ITypeForwarding(state, newstate, 1, 4);
+			->RTypeForwarding(state, newstate, 1, 4);
 		}else if(hazard_opcode == LW){
 			LWForwarding(state, newstate, 1, 4);
 		}else{
-			fprintf(stderr, "%s \n", "program did not call neither ITypeForwarding or LWForwarding");
+			fprintf(stderr, "%s \n", "program did not call neither ->RTypeForwarding or LWForwarding");
 			printinstruction(hazard_instr);
 		}
 
@@ -499,11 +499,11 @@ int forwardingUnit(statetype *state, statetype *newstate){
 		int hazard_opcode = opcode(hazard_instr);
 
 		if(hazard_opcode == ADD || hazard_opcode == NAND){
-			ITypeForwarding(state, newstate, 2, 2);
+			->RTypeForwarding(state, newstate, 2, 2);
 		}else if(hazard_opcode == LW){
 			LWForwarding(state, newstate, 2, 2);
 		}else{
-			fprintf(stderr, "%s \n", "program did not call neither ITypeForwarding or LWForwarding");
+			fprintf(stderr, "%s \n", "program did not call neither ->RTypeForwarding or LWForwarding");
 			printinstruction(hazard_instr);
 		}
 
@@ -515,11 +515,11 @@ int forwardingUnit(statetype *state, statetype *newstate){
 		int hazard_opcode = opcode(hazard_instr);
 
 		if(hazard_opcode == ADD || hazard_opcode == NAND){
-			ITypeForwarding(state, newstate, 2, 3);
+			->RTypeForwarding(state, newstate, 2, 3);
 		}else if(hazard_opcode == LW){
 			LWForwarding(state, newstate, 2, 3);
 		}else{
-			fprintf(stderr, "%s \n", "program did not call neither ITypeForwarding or LWForwarding");
+			fprintf(stderr, "%s \n", "program did not call neither ->RTypeForwarding or LWForwarding");
 			printinstruction(hazard_instr);
 		}
 
@@ -531,11 +531,11 @@ int forwardingUnit(statetype *state, statetype *newstate){
 		int hazard_opcode = opcode(hazard_instr);
 
 		if(hazard_opcode == ADD || hazard_opcode == NAND){
-			ITypeForwarding(state, newstate, 2, 4);
+			->RTypeForwarding(state, newstate, 2, 4);
 		}else if(hazard_opcode == LW){
 			LWForwarding(state, newstate, 2, 4);
 		}else{
-			fprintf(stderr, "%s \n", "program did not call neither ITypeForwarding or LWForwarding");
+			fprintf(stderr, "%s \n", "program did not call neither ->RTypeForwarding or LWForwarding");
 			printinstruction(hazard_instr);
 		}
 
@@ -586,6 +586,15 @@ void decodeStage(statetype *state, statetype *newstate){
 }
 
 void executeStage(statetype *state, statetype *newstate){
+
+	forwardingUnit(state, newstate);
+	// int hazard = forwardingUnit(state, newstate);
+
+	// if(hazard == 1){
+
+	// }else{
+
+	// }
 	//set instr in EXMEM buffer in newstate
 	newstate->EXMEM.instr = state->IDEX.instr;
     
@@ -605,7 +614,7 @@ void executeStage(statetype *state, statetype *newstate){
     }else if(operation == BEQ){
 		newstate->EXMEM.aluresult = state->IDEX.readregA - state->IDEX.readregB;
     }else if(operation == NOOP){
-		newstate->EXMEM.aluresult = -1;
+		newstate->EXMEM.aluresult = 0;
     }else{
 		fprintf(stderr,"%s %d\n" ,"FUNCTION: executeStage. REASON: Failed to get opcode from the instruction. INSTR: ", state->IDEX.instr);   
 	 }
