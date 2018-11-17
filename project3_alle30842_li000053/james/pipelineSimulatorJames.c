@@ -500,20 +500,14 @@ void writeBackStage(statetype *state, statetype *newstate){
 	printf("field2: %d\n", field2(instr));
 	if(operation == ADD || operation == NAND){
 		int regDest = field2(instr);
+		//write back here
+		newstate->reg[regDest] = state->MEMWB.writedata;
 		printf("add/nand regDest: %d\n", regDest);
 	}else if(operation == LW){
 		int regDest = field0(instr);
+		newstate->reg[regDest] = state->MEMWB.writedata;
 		printf("lw regDest: %d\n", regDest);
-	}else{
-		// In this case, we dont need to write back to the register file.
-		// SW, BEQ, NOOP, and HALT belong to this case.
-		return;
 	}
-
-	printf("regDest: %d\n", regDest);
-
-	//write back here
-	newstate->reg[regDest] = state->MEMWB.writedata;
 }
 
 int main(int argc, char** argv){
