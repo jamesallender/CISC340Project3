@@ -233,6 +233,7 @@ int hasDataHazard(statetype state, int bufferIndex, int regDetecting){
 }
 
 void RTypeForwarding(statetype *state, statetype *newstate, int data_expired, int buffer_cause_hazard){
+	printf("Runnin R Type Forwarding\n");
 	//data_expired:
 	//		1 -> readregA
 	//		2 -> readregB
@@ -250,21 +251,18 @@ void RTypeForwarding(statetype *state, statetype *newstate, int data_expired, in
 
 		//forwarding aluresult in EXMEM
 		if(buffer_cause_hazard == 2){
-			printf("buffer_cause_hazard = EXMEM\n");
 			newstate->IDEX.readregA = state->EXMEM.aluresult;
 			return;
 		}
 
 		//forwarding writedata in MEMWB
 		if(buffer_cause_hazard == 3){
-			printf("buffer_cause_hazard = MEMWB\n");
 			newstate->IDEX.readregA = state->MEMWB.writedata;
 			return;
 		}
 
 		//forwarding writedata in WBEND
 		if(buffer_cause_hazard == 4){
-			printf("buffer_cause_hazard = WBEND\n");
 			newstate->IDEX.readregA = state->MEMWB.writedata;
 			return;
 		}
@@ -275,21 +273,18 @@ void RTypeForwarding(statetype *state, statetype *newstate, int data_expired, in
 
 		//forwarding aluresult in EXMEM
 		if(buffer_cause_hazard == 2){
-			printf("buffer_cause_hazard = EXMEM\n");
 			newstate->IDEX.readregB = state->EXMEM.aluresult;
 			return;
 		}
 
 		//forwarding writedata in MEMWB
 		if(buffer_cause_hazard == 3){
-			printf("buffer_cause_hazard = MEMWB\n");
 			newstate->IDEX.readregB = state->MEMWB.writedata;
 			return;
 		}
 
 		//forwarding writedata in WBEND
 		if(buffer_cause_hazard == 4){
-			printf("buffer_cause_hazard = WBEND\n");
 			newstate->IDEX.readregB = state->WBEND.writedata;
 			return;
 		}
@@ -297,6 +292,7 @@ void RTypeForwarding(statetype *state, statetype *newstate, int data_expired, in
 }
 
 void LWForwarding(statetype *state, statetype *newstate, int data_expired, int buffer_cause_hazard){
+	printf("Runnin LW Forwarding\n");
 	//data_expired:
 	//		1 -> readregA
 	//		2 -> readregB
@@ -315,6 +311,11 @@ void LWForwarding(statetype *state, statetype *newstate, int data_expired, int b
 		if(buffer_cause_hazard == 2){
 			noopBubbleFlag = 1;
 
+			//set pc in newstate
+			newstate->pc = state->pc;
+			//set fetched num in newstate
+			newstate->fetched = state->fetched;
+
 			//pause IFID and IDEX
 			newstate->IFID = state->IFID;
 			newstate->IDEX = state->IDEX;
@@ -330,6 +331,12 @@ void LWForwarding(statetype *state, statetype *newstate, int data_expired, int b
 		//data is in MEMWB, set global variable noopBubbleFlag
 		if(buffer_cause_hazard == 3){
 			noopBubbleFlag = 1;
+
+			//set pc in newstate
+			newstate->pc = state->pc;
+			//set fetched num in newstate
+			newstate->fetched = state->fetched;
+
 
 			//pause IFID and IDEX
 			newstate->IFID = state->IFID;
@@ -357,6 +364,12 @@ void LWForwarding(statetype *state, statetype *newstate, int data_expired, int b
 		if(buffer_cause_hazard == 2){
 			noopBubbleFlag = 1;
 
+			//set pc in newstate
+			newstate->pc = state->pc;
+			//set fetched num in newstate
+			newstate->fetched = state->fetched;
+
+
 			//pause IFID and IDEX
 			newstate->IFID = state->IFID;
 			newstate->IDEX = state->IDEX;
@@ -373,6 +386,13 @@ void LWForwarding(statetype *state, statetype *newstate, int data_expired, int b
 		//data is in MEMWB, set global variable noopBubbleFlag
 		if(buffer_cause_hazard == 3){
 			noopBubbleFlag = 1;
+
+			//set pc in newstate
+			newstate->pc = state->pc;
+			//set fetched num in newstate
+			newstate->fetched = state->fetched;
+
+
 			newstate->IFID = state->IFID;
 			newstate->IDEX = state->IDEX;
 
@@ -453,7 +473,6 @@ int forwardingUnit(statetype *state, statetype *newstate){
 
 	//has data hazard, in EXMEM
 	if(regA_hazard_EXMEM == 1){
-		printf("regA_hazard_EXMEM\n");
 		int hazard_instr = state->EXMEM.instr;
 		int hazard_opcode = opcode(hazard_instr);
 
@@ -470,7 +489,6 @@ int forwardingUnit(statetype *state, statetype *newstate){
 	}
 
 	if(regA_hazard_MEMWB == 1 && regA_forwarded == 0){
-		printf("regA_hazard_MEMWB\n");
 		int hazard_instr = state->MEMWB.instr;
 		int hazard_opcode = opcode(hazard_instr);
 
@@ -487,7 +505,6 @@ int forwardingUnit(statetype *state, statetype *newstate){
 	}
 
 	if(regA_hazard_WBEND == 1 && regA_forwarded == 0){
-		printf("regA_hazard_WBEND\n");
 		int hazard_instr = state->WBEND.instr;
 		int hazard_opcode = opcode(hazard_instr);
 
@@ -504,7 +521,6 @@ int forwardingUnit(statetype *state, statetype *newstate){
 	}
 
 	if(regB_hazard_EXMEM == 1){
-		printf("regB_hazard_EXMEM\n");
 		int hazard_instr = state->EXMEM.instr;
 		int hazard_opcode = opcode(hazard_instr);
 
@@ -521,7 +537,6 @@ int forwardingUnit(statetype *state, statetype *newstate){
 	}
 
 	if(regB_hazard_MEMWB == 1 && regB_forwarded == 0){
-		printf("regB_hazard_MEMWB\n");
 		int hazard_instr = state->MEMWB.instr;
 		int hazard_opcode = opcode(hazard_instr);
 
@@ -538,7 +553,6 @@ int forwardingUnit(statetype *state, statetype *newstate){
 	}
 
 	if(regB_hazard_WBEND == 1 && regB_forwarded == 0){
-		printf("regB_hazard_WBEND\n");
 		int hazard_instr = state->WBEND.instr;
 		int hazard_opcode = opcode(hazard_instr);
 
@@ -563,14 +577,14 @@ void fetchStage(statetype *state, statetype *newstate){
 	int instruction = state->instrmem[state->pc];
 
 	// Only increment pc and fetched if noopBubbleFlag is not 1
-	if (noopBubbleFlag == 1){
-		noopBubbleFlag = 0;
-	}else{
-		//set pc in newstate
-		newstate->pc = state->pc + 1;
-		//set fetched num in newstate
-		newstate->fetched = state->fetched + 1;
-	}
+	// if (noopBubbleFlag == 1){
+	// 	noopBubbleFlag = 0;
+	// }else{
+	//set pc in newstate
+	newstate->pc = state->pc + 1;
+	//set fetched num in newstate
+	newstate->fetched = state->fetched + 1;
+	// }
 	
 	//set instruction in IFID buffer in newstate
 	//fetching the new instruction
@@ -593,26 +607,21 @@ void decodeStage(statetype *state, statetype *newstate){
 	newstate->IDEX.instr = state->IFID.instr;
 
 	newstate->IDEX.readregA = state->reg[field0(state->IFID.instr)];
-	printf("newstate->IDEX.readregA : %d\n", field0(state->IFID.instr));
-	printf("newstate->IDEX.readregA : %d\n", newstate->IDEX.readregA);
 
 	newstate->IDEX.readregB = state->reg[field1(state->IFID.instr)];
-	printf("newstate->IDEX.readregB: %d\n", field1(state->IFID.instr));
-	printf("newstate->IDEX.readregB: %d\n", newstate->IDEX.readregB);
 
 	newstate->IDEX.offset = signExtend(field2(state->IFID.instr));
 }
 
 void executeStage(statetype *state, statetype *newstate){
 
-	//set instr in EXMEM buffer in newstate
 	newstate->EXMEM.instr = state->IDEX.instr;
     
 	//set branch target address in EXMEM buffer in newstate
 	newstate->EXMEM.branchtarget = state->IDEX.pcplus1 + state->IDEX.offset;
 
-	// Do forwarding
 	forwardingUnit(state, newstate);
+
 
 	//set ALU result in EXMEM buffer in newstate
     int operation = opcode(state->IDEX.instr);
@@ -631,7 +640,6 @@ void executeStage(statetype *state, statetype *newstate){
 		fprintf(stderr,"%s %d\n" ,"FUNCTION: executeStage. REASON: Failed to get opcode from the instruction. INSTR: ", state->IDEX.instr);   
 	 }
 
-	printf("newstate->EXMEM.aluresult: %d\n", newstate->EXMEM.aluresult);
 
 	//set readreg in EXMEM buffer in newstate
 	newstate->EXMEM.readreg = state->IDEX.readregA;
@@ -659,8 +667,6 @@ void memoryStage(statetype *state, statetype *newstate){
 	newstate->MEMWB.instr = instr;
 	// get the alu result
 	int aluresult = state->EXMEM.aluresult;
-
-	printf("state->EXMEM.aluresult: %d\n", state->EXMEM.aluresult);
 
 	// Get operation
 	int operation = opcode(instr);
@@ -694,8 +700,6 @@ void memoryStage(statetype *state, statetype *newstate){
 		writeData = aluresult;
 	}
 
-	printf("writeData: %d\n", writeData);
-
 	newstate->MEMWB.writedata = writeData;
 }
 
@@ -716,8 +720,6 @@ void writeBackStage(statetype *state, statetype *newstate){
 	//write back to the register file
 	int operation = opcode(instr);
 	int regDest;
-
-	printf("state->MEMWB.writedata: %d\n", state->MEMWB.writedata);
 
 	if(operation == ADD || operation == NAND){
 		int regDest = field2(instr);

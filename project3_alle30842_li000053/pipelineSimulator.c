@@ -233,6 +233,7 @@ int hasDataHazard(statetype state, int bufferIndex, int regDetecting){
 }
 
 void RTypeForwarding(statetype *state, statetype *newstate, int data_expired, int buffer_cause_hazard){
+	printf("Runnin R Type Forwarding\n");
 	//data_expired:
 	//		1 -> readregA
 	//		2 -> readregB
@@ -291,6 +292,7 @@ void RTypeForwarding(statetype *state, statetype *newstate, int data_expired, in
 }
 
 void LWForwarding(statetype *state, statetype *newstate, int data_expired, int buffer_cause_hazard){
+	printf("Runnin LW Forwarding\n");
 	//data_expired:
 	//		1 -> readregA
 	//		2 -> readregB
