@@ -455,7 +455,7 @@ void memoryStage(statetype *state, statetype *newstate){
 		if (aluresult == 0){
 			// Set the new states pc to the branch target
 			newstate->pc = state->EXMEM.branchtarget;
-			newstate->mispreds = stat->mispreds + 1;
+			newstate->mispreds = state->mispreds + 1;
 			newstate->IFID.instr = NOOPINSTRUCTION;
 			newstate->IDEX.instr = NOOPINSTRUCTION;
 		}
