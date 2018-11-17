@@ -82,7 +82,7 @@ int isInstruction(int instruction){
 	int returnVal = 1;
 
 	// This will not work for an add 0 0 0s
-	if (state.inst)
+	// if (state.inst)
 	if (instruction == 0 || (opcode(instruction) != ADD && opcode(instruction) != NAND && opcode(instruction) != LW && opcode(instruction) != SW && 
 		opcode(instruction) != BEQ && opcode(instruction) != JALR && opcode(instruction) != HALT && opcode(instruction) != NOOP)){
 		returnVal = 0;
