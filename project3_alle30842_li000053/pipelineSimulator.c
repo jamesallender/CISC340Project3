@@ -261,7 +261,8 @@ void ITypeForwarding(statetype *state, statetype *newstate, int data_expired, in
 			return;
 		}
 	}
-
+	
+ 	// reg B
 	if(data_expired == 2){
 
 		//forwarding aluresult in EXMEM
