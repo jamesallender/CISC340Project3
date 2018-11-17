@@ -66,7 +66,6 @@ typedef struct statestruct{
 } statetype;
 
 int bubbleInsertions = 0;
-
 int noopBubbleFlag = 0;
 
 void printstate(statetype *stateptr);
@@ -80,12 +79,18 @@ int isInstruction(int instruction);
 
 // Check if a value is an instruction
 int isInstruction(int instruction){
+	printf("instruction: %d\n", instruction);
+	int returnVal = 1;
 
-	if (opcode(instruction) != ADD && opcode(instruction) != NAND && opcode(instruction) != LW && opcode(instruction) != SW && 
-		opcode(instruction) != BEQ && opcode(instruction) != JALR && opcode(instruction) != HALT && opcode(instruction) != NOOP){
-		return 0;
+	// This will not work for an add 0 0 0s
+	// if (state.inst)
+	if (instruction == 0 || (opcode(instruction) != ADD && opcode(instruction) != NAND && opcode(instruction) != LW && opcode(instruction) != SW && 
+		opcode(instruction) != BEQ && opcode(instruction) != JALR && opcode(instruction) != HALT && opcode(instruction) != NOOP)){
+		returnVal = 0;
+
 	}
-	return 1;
+	printf("returnVal: %d\n", returnVal);
+	return returnVal;
 }
 
 
@@ -542,18 +547,18 @@ int forwardingUnit(statetype *state, statetype *newstate){
 
 }
 
-
 void fetchStage(statetype *state, statetype *newstate){
 	int instruction = state->instrmem[state->pc];
 
-	//set pc in newstate
-	newstate->pc = state->pc + 1;
-
-	//set fetched num in newstate
-	if (isInstruction(instruction) == 1){
+	// Only increment pc and fetched if noopBubbleFlag is not 1
+	if (noopBubbleFlag == 1){
+		noopBubbleFlag = 0;
+	}else{
+		//set pc in newstate
+		newstate->pc = state->pc + 1;
+		//set fetched num in newstate
 		newstate->fetched = state->fetched + 1;
-	}	
-
+	}
 	
 	//set instruction in IFID buffer in newstate
 	//fetching the new instruction
@@ -637,7 +642,7 @@ void memoryStage(statetype *state, statetype *newstate){
 	int operation = opcode(instr);
 
 	// If instruction is a NOOP
-	if(operation ==  NOOP){
+	if(operation ==  NOOP || operation == HALT){
 		writeData = 0;
 	}
 	// If instruction is a BEQ
@@ -646,6 +651,9 @@ void memoryStage(statetype *state, statetype *newstate){
 		if (aluresult == 0){
 			// Set the new states pc to the branch target
 			newstate->pc = state->EXMEM.branchtarget;
+			newstate->mispreds = state->mispreds + 1;
+			newstate->IFID.instr = NOOPINSTRUCTION;
+			newstate->IDEX.instr = NOOPINSTRUCTION;
 		}
 	}
 	// if the instruction is a LW, get the data from memory
@@ -685,16 +693,12 @@ void writeBackStage(statetype *state, statetype *newstate){
 
 	if(operation == ADD || operation == NAND){
 		int regDest = field2(instr);
+		//write back here
+		newstate->reg[regDest] = state->MEMWB.writedata;
 	}else if(operation == LW){
 		int regDest = field0(instr);
-	}else{
-		// In this case, we dont need to write back to the register file.
-		// SW, BEQ, NOOP, and HALT belong to this case.
-		return;
+		newstate->reg[regDest] = state->MEMWB.writedata;
 	}
-
-	//write back here
-	newstate->reg[regDest] = state->MEMWB.writedata;
 }
 
 int main(int argc, char** argv){
@@ -799,8 +803,11 @@ int main(int argc, char** argv){
 		if(HALT == opcode(state.MEMWB.instr)) {
 			printf("machine halted\n");
 			printf("total of %d cycles executed\n", state.cycles);
-			printf("total of %d instructions fetched\n", state.fetched);
-			printf("total of %d instructions retired\n", (state.retired - bubbleInsertions - (state.mispreds * 2)));
+			// -3 to account for 'instructions' fetched befor HALT hit
+			printf("total of %d instructions fetched\n", (state.fetched) - 3);
+			// retired - the number of bubles inserted - the number of branch mispradictions * 2 for the 2 noop's loded per misprediciton
+			// -3 to acount for 3 stages of noting
+			printf("total of %d instructions retired\n", (state.retired - bubbleInsertions - (state.mispreds * 2) - 3));
 			printf("total of %d branches executed\n", state.branches);
 			printf("total of %d branch mispredictions\n", state.mispreds);
 			exit(0);
@@ -808,37 +815,6 @@ int main(int argc, char** argv){
 		newstate = state;
 
 		newstate.cycles = state.cycles + 1;
-
-
-		// typedef struct IFIDstruct{
-		// 	int instr;
-		// 	int pcplus1;
-		// } IFIDType;
-
-		// typedef struct IDEXstruct{
-		// 	int instr;
-		// 	int pcplus1;
-		// 	int readregA;
-		// 	int readregB;
-		// 	int offset;
-		// } IDEXType;
-
-		// typedef struct EXMEMstruct{
-		// 	int instr;
-		// 	int branchtarget;
-		// 	int aluresult;
-		// 	int readreg;
-		// } EXMEMType;
-
-		// typedef struct MEMWBstruct{
-		// 	int instr;
-		// 	int writedata;
-		// } MEMWBType;
-
-		// typedef struct WBENDstruct{
-		// 	int instr;
-		// 	int writedata;
-		// } WBENDType;
 
 
 		/*------------------ IF stage ----------------- */
@@ -852,6 +828,7 @@ int main(int argc, char** argv){
 		/*------------------ EX stage ----------------- */
 
 		executeStage(&state, &newstate);
+		//calling forwardingUnit in execusion
 
 		/*------------------ MEM stage ----------------- */
 
@@ -860,8 +837,6 @@ int main(int argc, char** argv){
 		/*------------------ WB stage ----------------- */
 		writeBackStage(&state, &newstate);
 
-		//calling forwardingUnit right here
-		//so that we can passing the newest data (hazard) before next execute stage
 
 		state = newstate; /* this is the last statement before the end of the loop.
 							It marks the end of the cycle and updates the current
@@ -869,3 +844,6 @@ int main(int argc, char** argv){
 							– AKA "Clock Tick". */
 	}
 }
+
+// if (instruction == 0 || (opcode(instruction) != ADD && opcode(instruction) != NAND && opcode(instruction) != LW && opcode(instruction) != SW && 
+// 		opcode(instruction) != BEQ && opcode(instruction) != JALR && opcode(instruction) != HALT && opcode(instruction) != NOOP)){
