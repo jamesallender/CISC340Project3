@@ -309,6 +309,11 @@ void LWForwarding(statetype *state, statetype *newstate, int data_expired, int b
 		if(buffer_cause_hazard == 2){
 			noopBubbleFlag = 1;
 
+			//set pc in newstate
+			newstate->pc = state->pc;
+			//set fetched num in newstate
+			newstate->fetched = state->fetched;
+
 			//pause IFID and IDEX
 			newstate->IFID = state->IFID;
 			newstate->IDEX = state->IDEX;
@@ -324,6 +329,12 @@ void LWForwarding(statetype *state, statetype *newstate, int data_expired, int b
 		//data is in MEMWB, set global variable noopBubbleFlag
 		if(buffer_cause_hazard == 3){
 			noopBubbleFlag = 1;
+
+			//set pc in newstate
+			newstate->pc = state->pc;
+			//set fetched num in newstate
+			newstate->fetched = state->fetched;
+
 
 			//pause IFID and IDEX
 			newstate->IFID = state->IFID;
@@ -351,6 +362,12 @@ void LWForwarding(statetype *state, statetype *newstate, int data_expired, int b
 		if(buffer_cause_hazard == 2){
 			noopBubbleFlag = 1;
 
+			//set pc in newstate
+			newstate->pc = state->pc;
+			//set fetched num in newstate
+			newstate->fetched = state->fetched;
+
+
 			//pause IFID and IDEX
 			newstate->IFID = state->IFID;
 			newstate->IDEX = state->IDEX;
@@ -367,6 +384,13 @@ void LWForwarding(statetype *state, statetype *newstate, int data_expired, int b
 		//data is in MEMWB, set global variable noopBubbleFlag
 		if(buffer_cause_hazard == 3){
 			noopBubbleFlag = 1;
+
+			//set pc in newstate
+			newstate->pc = state->pc;
+			//set fetched num in newstate
+			newstate->fetched = state->fetched;
+
+			
 			newstate->IFID = state->IFID;
 			newstate->IDEX = state->IDEX;
 
@@ -551,14 +575,14 @@ void fetchStage(statetype *state, statetype *newstate){
 	int instruction = state->instrmem[state->pc];
 
 	// Only increment pc and fetched if noopBubbleFlag is not 1
-	if (noopBubbleFlag == 1){
-		noopBubbleFlag = 0;
-	}else{
-		//set pc in newstate
-		newstate->pc = state->pc + 1;
-		//set fetched num in newstate
-		newstate->fetched = state->fetched + 1;
-	}
+	// if (noopBubbleFlag == 1){
+	// 	noopBubbleFlag = 0;
+	// }else{
+	//set pc in newstate
+	newstate->pc = state->pc + 1;
+	//set fetched num in newstate
+	newstate->fetched = state->fetched + 1;
+	// }
 	
 	//set instruction in IFID buffer in newstate
 	//fetching the new instruction
