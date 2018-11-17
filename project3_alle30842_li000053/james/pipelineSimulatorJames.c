@@ -79,11 +79,11 @@ int isInstruction(int instruction);
 // Check if a value is an instruction
 int isInstruction(int instruction){
 	printf("instruction: %d\n", instruction);
-	int returnVal = 0;
+	int returnVal = 1;
 
 	if ((opcode(instruction) != ADD && opcode(instruction) != NAND && opcode(instruction) != LW && opcode(instruction) != SW && 
 		opcode(instruction) != BEQ && opcode(instruction) != JALR && opcode(instruction) != HALT && opcode(instruction) != NOOP) && instruction != 0){
-		returnVal = 1;
+		returnVal = 0;
 	}
 	printf("returnVal: %d\n", returnVal);
 	return returnVal;
