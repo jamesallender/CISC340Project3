@@ -17,6 +17,15 @@
 #define NOOP 7
 #define NOOPINSTRUCTION 0x1c00000
 
+typedef struct forwardstruct{
+	int instr;
+	int instr_change;
+	int regAFlag;
+	int regBFlag;
+	int regAnewData;
+	int regBnewData;
+} ForwardUnit;
+
 typedef struct IFIDstruct{
 	int instr;
 	int pcplus1;
@@ -197,6 +206,11 @@ void printstate(statetype *stateptr){
 //      2 -> EXMEM
 //      3 -> MEMWB
 //      4 -> WBEND
+
+//return:
+//		0 -> no hazard
+// 		1 -> r type hazard
+// 		2 -> lw hazard
 int hasDataHazard(statetype state, int bufferIndex, int regDetecting){
     int instruction;
 
@@ -214,366 +228,120 @@ int hasDataHazard(statetype state, int bufferIndex, int regDetecting){
 
     int operation = opcode(instruction);
     int regcauseHazard;
-    //only ADD, NAND and LW causing the data hazard
-    //otherwise return 0, meaning no hazard
+    int returnHazardType = 0;
 
+    //only ADD, NAND and LW causing the data hazard
     if(operation == ADD || operation == NAND){
         regcauseHazard = field2(instruction);
+
+        if(regcauseHazard == regDetecting){
+        	return 1;
+        }else{
+        	return 0;
+        }
     }else if(operation == LW){
         regcauseHazard = field0(instruction);
+
+        if(regcauseHazard  == regDetecting){
+        	return 2;
+        }else{
+        	return 0;
+        }
     }else{
         return 0;
     }
 
-    if(regcauseHazard == regDetecting){
-        return 1;
-    }else{
-        return 0;
-    }
 }
 
-void RTypeForwarding(statetype *state, statetype *newstate, int data_expired, int buffer_cause_hazard){
-	printf("Runnin R Type Forwarding\n");
-	//data_expired:
-	//		1 -> readregA
-	//		2 -> readregB
-
-	//bufferIndex:
-	//      0 -> IFID
-	//      1 -> IDEX
-	//      2 -> EXMEM
-	//      3 -> MEMWB
-	//      4 -> WBEND
-
-
-	// readregA data expired
-	if(data_expired == 1){
-
-		//forwarding aluresult in EXMEM
-		if(buffer_cause_hazard == 2){
-			newstate->IDEX.readregA = state->EXMEM.aluresult;
-			return;
-		}
-
-		//forwarding writedata in MEMWB
-		if(buffer_cause_hazard == 3){
-			newstate->IDEX.readregA = state->MEMWB.writedata;
-			return;
-		}
-
-		//forwarding writedata in WBEND
-		if(buffer_cause_hazard == 4){
-			newstate->IDEX.readregA = state->MEMWB.writedata;
-			return;
-		}
-	}
-	
- 	// reg B
-	if(data_expired == 2){
-
-		//forwarding aluresult in EXMEM
-		if(buffer_cause_hazard == 2){
-			newstate->IDEX.readregB = state->EXMEM.aluresult;
-			return;
-		}
-
-		//forwarding writedata in MEMWB
-		if(buffer_cause_hazard == 3){
-			newstate->IDEX.readregB = state->MEMWB.writedata;
-			return;
-		}
-
-		//forwarding writedata in WBEND
-		if(buffer_cause_hazard == 4){
-			newstate->IDEX.readregB = state->WBEND.writedata;
-			return;
-		}
-	}
-}
-
-void LWForwarding(statetype *state, statetype *newstate, int data_expired, int buffer_cause_hazard){
-	printf("Runnin LW Forwarding\n");
-	//data_expired:
-	//		1 -> readregA
-	//		2 -> readregB
-
-	//bufferIndex:
-	//      0 -> IFID
-	//      1 -> IDEX
-	//      2 -> EXMEM
-	//      3 -> MEMWB
-	//      4 -> WBEND
-
-	//readregA data expired
-	if(data_expired == 1){
-
-		//data is in EXMEM, set global variable noopBubbleFlag
-		if(buffer_cause_hazard == 2){
-			noopBubbleFlag = 1;
-
-			//set pc in newstate
-			newstate->pc = state->pc;
-			//set fetched num in newstate
-			newstate->fetched = state->fetched;
-
-			//pause IFID and IDEX
-			newstate->IFID = state->IFID;
-			newstate->IDEX = state->IDEX;
-
-			//keep executing data in all other buffer
-			//but install noop instructions after LW instruction
-			newstate->EXMEM.instr = NOOPINSTRUCTION;
-			newstate->EXMEM.aluresult = 0;
-			newstate->EXMEM.branchtarget = 0;
-			newstate->EXMEM.readreg = 0;
-		}
-
-		//data is in MEMWB, set global variable noopBubbleFlag
-		if(buffer_cause_hazard == 3){
-			noopBubbleFlag = 1;
-
-			//set pc in newstate
-			newstate->pc = state->pc;
-			//set fetched num in newstate
-			newstate->fetched = state->fetched;
-
-
-			//pause IFID and IDEX
-			newstate->IFID = state->IFID;
-			newstate->IDEX = state->IDEX;
-
-			//keep executing data in all other buffer
-			//but install noop instructions after LW instruction
-			newstate->EXMEM.instr = NOOPINSTRUCTION;
-			newstate->EXMEM.aluresult = 0;
-			newstate->EXMEM.branchtarget = 0;
-			newstate->EXMEM.readreg = 0;
-		}
-
-		//data is in WBEND, no need for stall
-		if(buffer_cause_hazard == 4){
-			newstate->IDEX.readregB = state->WBEND.writedata;
-		}
-	}
-
-
-	//readregB data expired
-	if(data_expired == 2){
-
-		//data is in EXMEM, set global variable noopBubbleFlag
-		if(buffer_cause_hazard == 2){
-			noopBubbleFlag = 1;
-
-			//set pc in newstate
-			newstate->pc = state->pc;
-			//set fetched num in newstate
-			newstate->fetched = state->fetched;
-
-
-			//pause IFID and IDEX
-			newstate->IFID = state->IFID;
-			newstate->IDEX = state->IDEX;
-
-			//keep executing data in all other buffer
-			//but install noop instructions after LW instruction
-			newstate->EXMEM.instr = NOOPINSTRUCTION;
-			newstate->EXMEM.aluresult = 0;
-			newstate->EXMEM.branchtarget = 0;
-			newstate->EXMEM.readreg = 0;
-
-		}
-
-		//data is in MEMWB, set global variable noopBubbleFlag
-		if(buffer_cause_hazard == 3){
-			noopBubbleFlag = 1;
-
-			//set pc in newstate
-			newstate->pc = state->pc;
-			//set fetched num in newstate
-			newstate->fetched = state->fetched;
-
-
-			newstate->IFID = state->IFID;
-			newstate->IDEX = state->IDEX;
-
-			//pause IFID and IDEX
-			newstate->IFID = state->IFID;
-			newstate->IDEX = state->IDEX;
-
-			//keep executing data in all other buffer
-			//but install noop instructions after LW instruction
-			newstate->EXMEM.instr = NOOPINSTRUCTION;
-			newstate->EXMEM.aluresult = 0;
-			newstate->EXMEM.branchtarget = 0;
-			newstate->EXMEM.readreg = 0;
-		}
-
-		//data is in WBEND, no need for stall
-		if(buffer_cause_hazard == 4){
-			newstate->IDEX.readregB = state->WBEND.writedata;
-		}
-	}
-}
-
-
-//return 1 if there is one or more hazard
-//otherwise return 0
-int forwardingUnit(statetype *state, statetype *newstate){
-	//only use in the execution stage
-
-	//opcodes might cause data hazard
-	//ADD and NAND will overwrite value in destination with alu result
-	//LW will overwrite value in destination with data read from DataMem
-
-	//opcodes might take in data hazard
-	//ADD & NAND & BEQ & SW will all need to know the changes in RegA & RegB
-	//LW need to know the changes only in RegB(Destination register)
-	//halt & noop will not care
-
-	//Buffer that might contain hazard
-	// EXMEM & MEMWB & WBEND
-
+ForwardUnit forwarding(statetype *state, statetype *newstate){
 	int instr = state->IDEX.instr;
-
-	int operation = opcode(instr);
 	int regA = field0(instr);
-	int regB = field1(instr);	
+	int regB = field1(instr);
+
+	ForwardUnit unit;
+	unit.instr = instr;
+	unit.instr_change = 0;
+	unit.regAFlag = 0;
+	unit.regBFlag = 0;
 
 
-	if(operation == JALR || operation == NOOP || operation == HALT){
-		// if the opcode is JALR or NOOP or HALT, do nothing
-		return 0;
-	}
 
-	//bufferIndex:
-	//      0 -> IFID
-	//      1 -> IDEX
-	//      2 -> EXMEM
-	//      3 -> MEMWB
-	//      4 -> WBEND
-
-	int regA_forwarded = 0;
-	int regB_forwarded = 0;
-
+	/////////////////////////EXMEM////////////////////////////////
 	int regA_hazard_EXMEM = hasDataHazard(*state, 2, regA);
-	int regA_hazard_MEMWB = hasDataHazard(*state, 3, regA);
-	int regA_hazard_WBEND = hasDataHazard(*state, 4, regA);
-
 	int regB_hazard_EXMEM = hasDataHazard(*state, 2, regB);
-    int regB_hazard_MEMWB = hasDataHazard(*state, 3, regB);
-    int regB_hazard_WBEND = hasDataHazard(*state, 4, regB);
 
-	int regA_hazard = regA_hazard_EXMEM || regA_hazard_MEMWB || regA_hazard_WBEND;
-	int regB_hazard = regB_hazard_EXMEM || regB_hazard_MEMWB || regB_hazard_WBEND;
-
-	if(regA_hazard == 0 && regB_hazard == 0){
-		//no hazard at all
-		return 0;
+	//lw data hazard in either regA or regB
+	if(regA_hazard_EXMEM == 2 || regB_hazard_EXMEM == 2){
+		unit.instr_change = 1;
+		unit.instr = NOOPINSTRUCTION;
+		return unit;
 	}
 
-	//EXMEM
-
+	//r type forwarding
 	if(regA_hazard_EXMEM == 1){
-		int hazard_instr = state->EXMEM.instr;
-		int hazard_opcode = opcode(hazard_instr);
-
-		if(hazard_opcode == ADD || hazard_opcode == NAND){
-			RTypeForwarding(state, newstate, 1, 2);
-		}else if(hazard_opcode == LW){
-			LWForwarding(state, newstate, 1, 2);
-		}else{
-			fprintf(stderr, "%s \n", "program did not call neither RTypeForwarding or LWForwarding");
-			printinstruction(hazard_instr);
-		}
-
-		regA_forwarded = 1;
+		unit.regAFlag = 1;
+		unit.regAnewData = state->EXMEM.aluresult;
 	}
 
 	if(regB_hazard_EXMEM == 1){
-		int hazard_instr = state->EXMEM.instr;
-		int hazard_opcode = opcode(hazard_instr);
-
-		if(hazard_opcode == ADD || hazard_opcode == NAND){
-			RTypeForwarding(state, newstate, 2, 2);
-		}else if(hazard_opcode == LW){
-			LWForwarding(state, newstate, 2, 2);
-		}else{
-			fprintf(stderr, "%s \n", "program did not call neither RTypeForwarding or LWForwarding");
-			printinstruction(hazard_instr);
-		}
-
-		regB_forwarded = 1;
+		unit.regBFlag = 1;
+		unit.regBnewData = state->EXMEM.aluresult;
 	}
 
-	//MEMWB
-	if(regA_hazard_MEMWB == 1 && regA_forwarded == 0){
-		int hazard_instr = state->MEMWB.instr;
-		int hazard_opcode = opcode(hazard_instr);
-
-		if(hazard_opcode == ADD || hazard_opcode == NAND){
-			RTypeForwarding(state, newstate, 1, 3);
-		}else if(hazard_opcode == LW){
-			LWForwarding(state, newstate, 1, 3);
-		}else{
-			fprintf(stderr, "%s \n", "program did not call neither RTypeForwarding or LWForwarding");
-			printinstruction(hazard_instr);
-		}
-
-		regA_forwarded = 1;
+	if(unit.regAFlag == 1 && unit.regBFlag == 1){
+		return unit;
 	}
 
-	if(regB_hazard_MEMWB == 1 && regB_forwarded == 0){
-		int hazard_instr = state->MEMWB.instr;
-		int hazard_opcode = opcode(hazard_instr);
+	/////////////////////////////////////////////////////////////
 
-		if(hazard_opcode == ADD || hazard_opcode == NAND){
-			RTypeForwarding(state, newstate, 2, 3);
-		}else if(hazard_opcode == LW){
-			LWForwarding(state, newstate, 2, 3);
-		}else{
-			fprintf(stderr, "%s \n", "program did not call neither RTypeForwarding or LWForwarding");
-			printinstruction(hazard_instr);
-		}
 
-		regB_forwarded = 1;
+
+	/////////////////////////MEMWB////////////////////////////////
+
+	int regA_hazard_MEMWB = hasDataHazard(*state, 3, regA);
+	int regB_hazard_MEMWB = hasDataHazard(*state, 3, regB);
+
+	//if there is hazard in MEMWB buffer, forwarding data for both r type and lw
+	if(regA_hazard_MEMWB != 0){
+		unit.regAFlag = 1;
+		unit.regAFlag = state->MEMWB.writedata;
 	}
 
-	//WBEND
-	if(regA_hazard_WBEND == 1 && regA_forwarded == 0){
-		int hazard_instr = state->WBEND.instr;
-		int hazard_opcode = opcode(hazard_instr);
-
-		if(hazard_opcode == ADD || hazard_opcode == NAND){
-			RTypeForwarding(state, newstate, 1, 4);
-		}else if(hazard_opcode == LW){
-			LWForwarding(state, newstate, 1, 4);
-		}else{
-			fprintf(stderr, "%s \n", "program did not call neither RTypeForwarding or LWForwarding");
-			printinstruction(hazard_instr);
-		}
-
-		regA_forwarded = 1;
+	if(regB_hazard_MEMWB != 0){
+		unit.regBFlag = 1;
+		unit.regBFlag = state->MEMWB.writedata;
 	}
 
-	if(regB_hazard_WBEND == 1 && regB_forwarded == 0){
-		int hazard_instr = state->WBEND.instr;
-		int hazard_opcode = opcode(hazard_instr);
+	if(unit.regAFlag == 1 && unit.regBFlag == 1){
+		return unit;
+	}
+	/////////////////////////////////////////////////////////////
 
-		if(hazard_opcode == ADD || hazard_opcode == NAND){
-			RTypeForwarding(state, newstate, 2, 4);
-		}else if(hazard_opcode == LW){
-			LWForwarding(state, newstate, 2, 4);
-		}else{
-			fprintf(stderr, "%s \n", "program did not call neither RTypeForwarding or LWForwarding");
-			printinstruction(hazard_instr);
-		}
 
-		regB_forwarded = 1;
+	/////////////////////////WBEND////////////////////////////////
+
+	int regA_hazard_WBEND = hasDataHazard(*state, 4, regA);
+	int regB_hazard_WBEND = hasDataHazard(*state, 4, regB);
+
+	//if there is hazard in WBEND buffer, forwarding data for both r type and lw
+	if(regA_hazard_WBEND != 0){
+		unit.regAFlag = 1;
+		unit.regAFlag = state->WBEND.writedata;
 	}
 
-	return (regA_forwarded || regB_forwarded);
+	if(regB_hazard_WBEND != 0){
+		unit.regBFlag = 1;
+		unit.regBFlag = state->WBEND.writedata;
+	}
 
+	if(unit.regAFlag == 1 && unit.regBFlag == 1){
+		return unit;
+	}
+	/////////////////////////////////////////////////////////////
+
+	return unit;
 }
+
 
 void fetchStage(statetype *state, statetype *newstate){
 	int instruction = state->instrmem[state->pc];
@@ -617,30 +385,63 @@ void decodeStage(statetype *state, statetype *newstate){
 
 void executeStage(statetype *state, statetype *newstate){
 
-	newstate->EXMEM.instr = state->IDEX.instr;
-    
-	//set branch target address in EXMEM buffer in newstate
-	newstate->EXMEM.branchtarget = state->IDEX.pcplus1 + state->IDEX.offset;
+	int instr;
+	int regA_data = state->IDEX.readregA;
+	int regB_data = state->IDEX.readregB;
+	int offset = state->IDEX.offset;
 
-	forwardingUnit(state, newstate);
+	ForwardUnit unit = forwarding(state, newstate);
 
+	instr = unit.instr;
 
-	//set ALU result in EXMEM buffer in newstate
-    int operation = opcode(state->IDEX.instr);
+	if(unit.instr_change == 1){
+		noopBubbleFlag = 1;
 
-    if(operation == ADD){
-        newstate->EXMEM.aluresult = state->IDEX.readregA + state->IDEX.readregB;
-    }else if(operation == NAND){
-        newstate->EXMEM.aluresult = ~(state->IDEX.readregA & state->IDEX.readregB);
-    }else if(operation == LW || operation == SW){
-		newstate->EXMEM.aluresult = state->IDEX.readregB + state->IDEX.offset;
-    }else if(operation == BEQ){
-		newstate->EXMEM.aluresult = state->IDEX.readregA - state->IDEX.readregB;
-    }else if(operation == NOOP){
+		//set pc in newstate
+
+		newstate->pc = state->pc;
+		//set fetched num in newstate
+		newstate->fetched = state->fetched;
+
+		//pause IFID and IDEX
+		newstate->IFID = state->IFID;
+		newstate->IDEX = state->IDEX;
+
+		regA_data = 0;
+		regB_data = 0;
+		offset = 0;
+	}
+
+	if(unit.regAFlag == 1){
+		regA_data = unit.regAnewData;
+	}
+
+	if(unit.regBFlag == 1){
+		regB_data = unit.regBnewData;
+	}
+
+	//set for newstate
+	newstate->EXMEM.instr = instr;
+
+	newstate->EXMEM.branchtarget = offset + state->IDEX.pcplus1;
+
+	int operation = opcode(instr);
+	if(operation == ADD){
+		newstate->EXMEM.aluresult = regA_data + regB_data;
+	}else if(operation == NAND){
+		newstate->EXMEM.aluresult = ~(regA_data & regB_data);
+	}else if(operation == LW || operation == SW){
+		newstate->EXMEM.aluresult = regB_data + offset;
+	}else if(operation == BEQ){
+		newstate->EXMEM.aluresult = regA_data - regB_data;
+	}else if(operation == NOOP){
 		newstate->EXMEM.aluresult = 0;
-    }else{
-		fprintf(stderr,"%s %d\n" ,"FUNCTION: executeStage. REASON: Failed to get opcode from the instruction. INSTR: ", state->IDEX.instr);   
-	 }
+	}
+
+	else{
+		fprintf(stderr,"%s %d\n" ,"FUNCTION: executeStage. REASON: Failed to get opcode from the instruction. INSTR: ", opcode(state->IDEX.instr));
+		exit(0);
+	}
 
 
 	//set readreg in EXMEM buffer in newstate
