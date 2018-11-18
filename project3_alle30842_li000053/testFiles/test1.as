@@ -26,7 +26,7 @@
 	noop
 	noop
 	noop
-	sw		2	0	b	# ovewrite b with contents of reg 2
+	sw		1	0	b	# ovewrite b with contents of reg 1
 	noop
 	noop
 	noop
