@@ -515,6 +515,7 @@ void memoryStage(statetype *state, statetype *newstate){
 			newstate->mispreds = state->mispreds + 1;
 			newstate->IFID.instr = NOOPINSTRUCTION;
 			newstate->IDEX.instr = NOOPINSTRUCTION;
+			newstate->EXMEM.instr = NOOPINSTRUCTION;
 		}
 	}
 	// if the instruction is a LW, get the data from memory
@@ -668,7 +669,7 @@ int main(int argc, char** argv){
 			printf("total of %d instructions fetched\n", (state.fetched));
 			// retired - the number of bubles inserted - the number of branch mispradictions * 2 for the 2 noop's loded per misprediciton
 			// -3 to acount for 3 stages of noting
-			printf("total of %d instructions retired\n", (state.retired - bubbleInsertions - (state.mispreds * 2) - 3));
+			printf("total of %d instructions retired\n", (state.retired - bubbleInsertions - (state.mispreds * 3) - 3));
 			printf("total of %d branches executed\n", state.branches);
 			printf("total of %d branch mispredictions\n", state.mispreds);
 			exit(0);
