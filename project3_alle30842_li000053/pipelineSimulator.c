@@ -364,9 +364,9 @@ void fetchStage(statetype *state, statetype *newstate){
 	//set pc in newstate
 	newstate->pc = state->pc + 1;
 	//set fetched num in newstate
-	if(haltAppeared == 0) {
-		newstate->fetched = state->fetched + 1;
-	}
+	//if(haltAppeared == 0) {
+	newstate->fetched = state->fetched + 1;
+	//}
 	// }
 	
 	//set instruction in IFID buffer in newstate
@@ -666,7 +666,7 @@ int main(int argc, char** argv){
 			printf("machine halted\n");
 			printf("total of %d cycles executed\n", state.cycles);
 			// -3 to account for 'instructions' fetched befor HALT hit
-			printf("total of %d instructions fetched\n", (state.fetched));
+			printf("total of %d instructions fetched\n", (state.fetched - 3));
 			// retired - the number of bubles inserted - the number of branch mispradictions * 2 for the 2 noop's loded per misprediciton
 			// -3 to acount for 3 stages of noting
 			printf("total of %d instructions retired\n", (state.retired - bubbleInsertions - (state.mispreds * 3) - 3));
