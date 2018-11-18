@@ -254,6 +254,9 @@ int hasDataHazard(statetype state, int bufferIndex, int regDetecting){
 }
 
 ForwardUnit forwarding(statetype *state, statetype *newstate){
+	int regA_forworded = 0;
+	int regB_forworded = 0;
+
 	int instr = state->IDEX.instr;
 	int regA = field0(instr);
 	int regB = field1(instr);
@@ -280,16 +283,18 @@ ForwardUnit forwarding(statetype *state, statetype *newstate){
 
 	//r type forwarding
 	if(regA_hazard_EXMEM == 1){
+		regA_forworded = 1;
 		unit.regAFlag = 1;
 		unit.regAnewData = state->EXMEM.aluresult;
 	}
 
 	if(regB_hazard_EXMEM == 1){
+		regB_forworded = 1;
 		unit.regBFlag = 1;
 		unit.regBnewData = state->EXMEM.aluresult;
 	}
 
-	if(unit.regAFlag == 1 && unit.regBFlag == 1){
+	if(regA_forworded == 1 && regB_forworded == 1){
 		return unit;
 	}
 
@@ -303,17 +308,19 @@ ForwardUnit forwarding(statetype *state, statetype *newstate){
 	int regB_hazard_MEMWB = hasDataHazard(*state, 3, regB);
 
 	//if there is hazard in MEMWB buffer, forwarding data for both r type and lw
-	if(regA_hazard_MEMWB != 0){
+	if(regA_hazard_MEMWB != 0 && regA_forworded == 0){
+		regA_forworded = 1;
 		unit.regAFlag = 1;
 		unit.regAnewData = state->MEMWB.writedata;
 	}
 
-	if(regB_hazard_MEMWB != 0){
+	if(regB_hazard_MEMWB != 0 && regB_forworded == 0){
+		regB_forworded = 1;
 		unit.regBFlag = 1;
 		unit.regBnewData = state->MEMWB.writedata;
 	}
 
-	if(unit.regAFlag == 1 && unit.regBFlag == 1){
+	if(regA_forworded == 1 && regB_forworded == 1){
 		return unit;
 	}
 	/////////////////////////////////////////////////////////////
@@ -325,17 +332,19 @@ ForwardUnit forwarding(statetype *state, statetype *newstate){
 	int regB_hazard_WBEND = hasDataHazard(*state, 4, regB);
 
 	//if there is hazard in WBEND buffer, forwarding data for both r type and lw
-	if(regA_hazard_WBEND != 0){
+	if(regA_hazard_WBEND != 0 && regA_forworded == 0){
+		regA_forworded = 1;
 		unit.regAFlag = 1;
 		unit.regAnewData = state->WBEND.writedata;
 	}
 
-	if(regB_hazard_WBEND != 0){
+	if(regB_hazard_WBEND != 0 && regB_forworded == 0){
+		regB_forworded = 1;
 		unit.regBFlag = 1;
 		unit.regBnewData = state->WBEND.writedata;
 	}
 
-	if(unit.regAFlag == 1 && unit.regBFlag == 1){
+	if(regA_forworded == 1 && regB_forworded == 1){
 		return unit;
 	}
 	/////////////////////////////////////////////////////////////
