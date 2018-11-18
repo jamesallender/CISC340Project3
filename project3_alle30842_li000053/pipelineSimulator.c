@@ -436,9 +436,9 @@ void executeStage(statetype *state, statetype *newstate){
 		newstate->EXMEM.aluresult = regA_data - regB_data;
 	}else if(operation == NOOP){
 		newstate->EXMEM.aluresult = 0;
-	}
-
-	else{
+	}else if(operation == JALR || operation == HALT){
+		//do nothing 
+	}else{
 		fprintf(stderr,"%s %d\n" ,"FUNCTION: executeStage. REASON: Failed to get opcode from the instruction. INSTR: ", opcode(state->IDEX.instr));
 		exit(0);
 	}
