@@ -465,7 +465,7 @@ void executeStage(statetype *state, statetype *newstate){
 
 
 	//set readreg in EXMEM buffer in newstate
-	newstate->EXMEM.readreg = state->IDEX.readregA;
+	newstate->EXMEM.readreg = regA_data;
 }
 
 void memoryStage(statetype *state, statetype *newstate){
