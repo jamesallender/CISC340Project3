@@ -9,16 +9,21 @@
 	add		3	1	2
 	noop
 	noop
+	noop
 	add		3	3	2
 	noop
 	noop
+	noop
 	add		3	3	2
+	noop
 	noop
 	noop
 	nand	3	1	2
 	noop
 	noop
+	noop
 	nand	3	3	3	
+	noop
 	noop
 	noop
 	sw		3	0	b	# ovewrite b with contents of reg 3

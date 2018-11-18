@@ -9,7 +9,9 @@
 		add	3	0	0	# put 0 in reg 3 to initalize the the counter
 		noop
 		noop
+		noop
 loop	add	3	1	1	# i++
+		noop
 		noop
 		noop
 		beq 3	2	end	# end loop if reg 2 = reg 3
