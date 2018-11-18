@@ -76,6 +76,7 @@ typedef struct statestruct{
 
 int bubbleInsertions = 0;
 int noopBubbleFlag = 0;
+int haltAppeared = 0;
 
 void printstate(statetype *stateptr);
 void printinstruction(int instr);
@@ -363,13 +364,19 @@ void fetchStage(statetype *state, statetype *newstate){
 	//set pc in newstate
 	newstate->pc = state->pc + 1;
 	//set fetched num in newstate
-	newstate->fetched = state->fetched + 1;
+	if(haltAppeared == 0) {
+		newstate->fetched = state->fetched + 1;
+	}
 	// }
 	
 	//set instruction in IFID buffer in newstate
 	//fetching the new instruction
 	newstate->IFID.instr = instruction;
-	
+
+	if(opcode(instruction) == HALT){
+		haltAppeared = 1;
+	}
+
 	//set pcplu1 in IFID buffer in newstate
 	newstate->IFID.pcplus1 = state->pc + 1;
 }
@@ -658,7 +665,7 @@ int main(int argc, char** argv){
 			printf("machine halted\n");
 			printf("total of %d cycles executed\n", state.cycles);
 			// -3 to account for 'instructions' fetched befor HALT hit
-			printf("total of %d instructions fetched\n", (state.fetched) - 3);
+			printf("total of %d instructions fetched\n", (state.fetched));
 			// retired - the number of bubles inserted - the number of branch mispradictions * 2 for the 2 noop's loded per misprediciton
 			// -3 to acount for 3 stages of noting
 			printf("total of %d instructions retired\n", (state.retired - bubbleInsertions - (state.mispreds * 2) - 3));
