@@ -471,7 +471,8 @@ int forwardingUnit(statetype *state, statetype *newstate){
 		return 0;
 	}
 
-	//has data hazard, in EXMEM
+	//EXMEM
+
 	if(regA_hazard_EXMEM == 1){
 		int hazard_instr = state->EXMEM.instr;
 		int hazard_opcode = opcode(hazard_instr);
@@ -480,38 +481,6 @@ int forwardingUnit(statetype *state, statetype *newstate){
 			RTypeForwarding(state, newstate, 1, 2);
 		}else if(hazard_opcode == LW){
 			LWForwarding(state, newstate, 1, 2);
-		}else{
-			fprintf(stderr, "%s \n", "program did not call neither RTypeForwarding or LWForwarding");
-			printinstruction(hazard_instr);
-		}
-
-		regA_forwarded = 1;
-	}
-
-	if(regA_hazard_MEMWB == 1 && regA_forwarded == 0){
-		int hazard_instr = state->MEMWB.instr;
-		int hazard_opcode = opcode(hazard_instr);
-
-		if(hazard_opcode == ADD || hazard_opcode == NAND){
-			RTypeForwarding(state, newstate, 1, 3);
-		}else if(hazard_opcode == LW){
-			LWForwarding(state, newstate, 1, 3);
-		}else{
-			fprintf(stderr, "%s \n", "program did not call neither RTypeForwarding or LWForwarding");
-			printinstruction(hazard_instr);
-		}
-
-		regA_forwarded = 1;
-	}
-
-	if(regA_hazard_WBEND == 1 && regA_forwarded == 0){
-		int hazard_instr = state->WBEND.instr;
-		int hazard_opcode = opcode(hazard_instr);
-
-		if(hazard_opcode == ADD || hazard_opcode == NAND){
-			RTypeForwarding(state, newstate, 1, 4);
-		}else if(hazard_opcode == LW){
-			LWForwarding(state, newstate, 1, 4);
 		}else{
 			fprintf(stderr, "%s \n", "program did not call neither RTypeForwarding or LWForwarding");
 			printinstruction(hazard_instr);
@@ -536,6 +505,23 @@ int forwardingUnit(statetype *state, statetype *newstate){
 		regB_forwarded = 1;
 	}
 
+	//MEMWB
+	if(regA_hazard_MEMWB == 1 && regA_forwarded == 0){
+		int hazard_instr = state->MEMWB.instr;
+		int hazard_opcode = opcode(hazard_instr);
+
+		if(hazard_opcode == ADD || hazard_opcode == NAND){
+			RTypeForwarding(state, newstate, 1, 3);
+		}else if(hazard_opcode == LW){
+			LWForwarding(state, newstate, 1, 3);
+		}else{
+			fprintf(stderr, "%s \n", "program did not call neither RTypeForwarding or LWForwarding");
+			printinstruction(hazard_instr);
+		}
+
+		regA_forwarded = 1;
+	}
+
 	if(regB_hazard_MEMWB == 1 && regB_forwarded == 0){
 		int hazard_instr = state->MEMWB.instr;
 		int hazard_opcode = opcode(hazard_instr);
@@ -550,6 +536,23 @@ int forwardingUnit(statetype *state, statetype *newstate){
 		}
 
 		regB_forwarded = 1;
+	}
+
+	//WBEND
+	if(regA_hazard_WBEND == 1 && regA_forwarded == 0){
+		int hazard_instr = state->WBEND.instr;
+		int hazard_opcode = opcode(hazard_instr);
+
+		if(hazard_opcode == ADD || hazard_opcode == NAND){
+			RTypeForwarding(state, newstate, 1, 4);
+		}else if(hazard_opcode == LW){
+			LWForwarding(state, newstate, 1, 4);
+		}else{
+			fprintf(stderr, "%s \n", "program did not call neither RTypeForwarding or LWForwarding");
+			printinstruction(hazard_instr);
+		}
+
+		regA_forwarded = 1;
 	}
 
 	if(regB_hazard_WBEND == 1 && regB_forwarded == 0){
@@ -567,7 +570,6 @@ int forwardingUnit(statetype *state, statetype *newstate){
 
 		regB_forwarded = 1;
 	}
-
 
 	return (regA_forwarded || regB_forwarded);
 
