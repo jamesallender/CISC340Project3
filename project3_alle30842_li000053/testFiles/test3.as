@@ -1,8 +1,3 @@
-	lw	1	0	a
-	lw	2	0	b
-	add	3	1	2
-	add	3	3	2
-	add	3	3	2
-	halt	
-a	.fill	4	
-b	.fill	2
+		lw		1		0		data1 $1= mem[data1]	# Simple load and halt test provided by the Professor
+		halt
+data1	.fill	12345
