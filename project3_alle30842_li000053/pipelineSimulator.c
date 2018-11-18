@@ -511,7 +511,7 @@ void memoryStage(statetype *state, statetype *newstate){
 		// If the branch is to be taken
 		if (aluresult == 0){
 			// Set the new states pc to the branch target
-			newstate->branches = state->branches + 1
+			newstate->branches = state->branches + 1;
 			newstate->pc = state->EXMEM.branchtarget;
 			newstate->mispreds = state->mispreds + 1;
 			newstate->IFID.instr = NOOPINSTRUCTION;
