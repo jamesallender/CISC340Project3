@@ -416,6 +416,7 @@ void executeStage(statetype *state, statetype *newstate){
 
 	if(unit.instr_change == 1){
 		noopBubbleFlag = 1;
+		bubbleInsertions = bubbleInsertions + 1;
 
 		//set pc in newstate
 
