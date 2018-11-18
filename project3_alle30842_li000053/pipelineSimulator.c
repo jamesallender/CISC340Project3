@@ -264,7 +264,8 @@ ForwardUnit forwarding(statetype *state, statetype *newstate){
 	unit.regAFlag = 0;
 	unit.regBFlag = 0;
 
-
+	unit.regAnewData = 0;
+	unit.regBnewData = 0;
 
 	/////////////////////////EXMEM////////////////////////////////
 	int regA_hazard_EXMEM = hasDataHazard(*state, 2, regA);
@@ -304,12 +305,12 @@ ForwardUnit forwarding(statetype *state, statetype *newstate){
 	//if there is hazard in MEMWB buffer, forwarding data for both r type and lw
 	if(regA_hazard_MEMWB != 0){
 		unit.regAFlag = 1;
-		unit.regAFlag = state->MEMWB.writedata;
+		unit.regAnewData = state->MEMWB.writedata;
 	}
 
 	if(regB_hazard_MEMWB != 0){
 		unit.regBFlag = 1;
-		unit.regBFlag = state->MEMWB.writedata;
+		unit.regBnewData = state->MEMWB.writedata;
 	}
 
 	if(unit.regAFlag == 1 && unit.regBFlag == 1){
@@ -326,12 +327,12 @@ ForwardUnit forwarding(statetype *state, statetype *newstate){
 	//if there is hazard in WBEND buffer, forwarding data for both r type and lw
 	if(regA_hazard_WBEND != 0){
 		unit.regAFlag = 1;
-		unit.regAFlag = state->WBEND.writedata;
+		unit.regAnewData = state->WBEND.writedata;
 	}
 
 	if(regB_hazard_WBEND != 0){
 		unit.regBFlag = 1;
-		unit.regBFlag = state->WBEND.writedata;
+		unit.regBnewData = state->WBEND.writedata;
 	}
 
 	if(unit.regAFlag == 1 && unit.regBFlag == 1){
@@ -391,6 +392,16 @@ void executeStage(statetype *state, statetype *newstate){
 	int offset = state->IDEX.offset;
 
 	ForwardUnit unit = forwarding(state, newstate);
+
+	printf("unit.instr: \n");
+	printinstruction(unit.instr);
+	printf("unit.instr_change: %d \n", unit.instr_change);
+	printf("unit.regAFlag: %d\n", unit.regAFlag);
+	printf("unit.regAnewData: %d\n", unit.regAnewData);
+	printf("unit.regBFlag: %d\n", unit.regBFlag);
+	printf("unit.regBnewData: %d\n", unit.regBnewData);
+
+
 
 	instr = unit.instr;
 
