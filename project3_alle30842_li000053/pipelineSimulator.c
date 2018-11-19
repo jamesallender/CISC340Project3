@@ -378,7 +378,7 @@ void executeStage(statetype *state, statetype *newstate){
 	instr = unit.instr;
 
 	if(unit.instr_change == 1){
-		newstate->retired = sate->retired - 1;
+		newstate->retired = state->retired - 1;
 
 		//set pc in newstate
 
@@ -433,6 +433,27 @@ void executeStage(statetype *state, statetype *newstate){
 }
 
 void memoryStage(statetype *state, statetype *newstate){
+	/*
+	typedef struct IFIDstruct{
+	int instr;
+	int pcplus1;
+} IFIDType;
+
+typedef struct IDEXstruct{
+	int instr;
+	int pcplus1;
+	int readregA;
+	int readregB;
+	int offset;
+} IDEXType;
+
+typedef struct EXMEMstruct{
+	int instr;
+	int branchtarget;
+	int aluresult;
+	int readreg;
+} EXMEMType;
+	*/
 
 	// writeData defult value is 0
 	int writeData = 0;
@@ -453,15 +474,27 @@ void memoryStage(statetype *state, statetype *newstate){
 	}
 	// If instruction is a BEQ
 	else if(operation ==  BEQ){
+		newstate->branches = state->branches + 1;
 		// If the branch is to be taken
 		if (aluresult == 0){
 			// Set the new states pc to the branch target
-			newstate->branches = state->branches + 1;
+
 			newstate->pc = state->EXMEM.branchtarget;
 			newstate->mispreds = state->mispreds + 1;
+
 			newstate->IFID.instr = NOOPINSTRUCTION;
+			newstate->IFID.pcplus1 = 0;
+
 			newstate->IDEX.instr = NOOPINSTRUCTION;
+			newstate->IDEX.pcplus1 = 0;
+			newstate->IDEX.readregA = 0;
+			newstate->IDEX.readregB = 0;
+			newstate->IDEX.offset = 0;
+
 			newstate->EXMEM.instr = NOOPINSTRUCTION;
+			newstate->EXMEM.branchtarget = 0;
+			newstate->EXMEM.aluresult = 0;
+			newstate->EXMEM.readreg = 0;
 		}
 	}
 	// if the instruction is a LW, get the data from memory
