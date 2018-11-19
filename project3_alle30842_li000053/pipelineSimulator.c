@@ -408,7 +408,12 @@ void executeStage(statetype *state, statetype *newstate){
 	//set for newstate
 	newstate->EXMEM.instr = instr;
 
-	newstate->EXMEM.branchtarget = offset + state->IDEX.pcplus1;
+	if(instr == NOOP){
+		newstate->EXMEM.branchtarget = 0;
+	}else{
+		newstate->EXMEM.branchtarget = offset + state->IDEX.pcplus1;
+	}
+
 
 	int operation = opcode(instr);
 	if(operation == ADD){
@@ -433,27 +438,6 @@ void executeStage(statetype *state, statetype *newstate){
 }
 
 void memoryStage(statetype *state, statetype *newstate){
-	/*
-	typedef struct IFIDstruct{
-	int instr;
-	int pcplus1;
-} IFIDType;
-
-typedef struct IDEXstruct{
-	int instr;
-	int pcplus1;
-	int readregA;
-	int readregB;
-	int offset;
-} IDEXType;
-
-typedef struct EXMEMstruct{
-	int instr;
-	int branchtarget;
-	int aluresult;
-	int readreg;
-} EXMEMType;
-	*/
 
 	// writeData defult value is 0
 	int writeData = 0;
