@@ -358,16 +358,12 @@ void fetchStage(statetype *state, statetype *newstate){
 	int instruction = state->instrmem[state->pc];
 
 	// Only increment pc and fetched if noopBubbleFlag is not 1
-	// if (noopBubbleFlag == 1){
-	// 	noopBubbleFlag = 0;
-	// }else{
+
 	//set pc in newstate
 	newstate->pc = state->pc + 1;
 	//set fetched num in newstate
-	//if(haltAppeared == 0) {
 	newstate->fetched = state->fetched + 1;
-	//}
-	// }
+
 	
 	//set instruction in IFID buffer in newstate
 	//fetching the new instruction
@@ -382,13 +378,6 @@ void fetchStage(statetype *state, statetype *newstate){
 }
 
 void decodeStage(statetype *state, statetype *newstate){
-	// typedef struct IDEXstruct{
-	// 	int instr;
-	// 	int pcplus1;
-	// 	int readregA;
-	// 	int readregB;
-	// 	int offset;
-	// } IDEXType;
 
 	newstate->IDEX.pcplus1 = state->IFID.pcplus1;
 	newstate->IDEX.instr = state->IFID.instr;
@@ -477,18 +466,6 @@ void executeStage(statetype *state, statetype *newstate){
 }
 
 void memoryStage(statetype *state, statetype *newstate){
-	// typedef struct EXMEMstruct{
-	// 	int instr;
-	// 	int branchtarget;
-	// 	int aluresult;
-	// 	int readreg;
-	// } EXMEMType;
-
-	// typedef struct MEMWBstruct{
-	// 	int instr;
-	// 	int writedata;
-	// } MEMWBType;
-
 	// writeData defult value is 0
 	int writeData = 0;
 
@@ -708,5 +685,3 @@ int main(int argc, char** argv){
 	}
 }
 
-// if (instruction == 0 || (opcode(instruction) != ADD && opcode(instruction) != NAND && opcode(instruction) != LW && opcode(instruction) != SW && 
-// 		opcode(instruction) != BEQ && opcode(instruction) != JALR && opcode(instruction) != HALT && opcode(instruction) != NOOP)){
