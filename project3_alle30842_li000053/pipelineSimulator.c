@@ -396,7 +396,9 @@ void executeStage(statetype *state, statetype *newstate){
 	}
 
 	if(unit.regAFlag == 1){
-		regA_data = unit.regAnewData;
+		if(opcode(instr) != LW) {
+			regA_data = unit.regAnewData;
+		}
 	}
 
 	if(unit.regBFlag == 1){
