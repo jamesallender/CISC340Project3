@@ -74,10 +74,6 @@ typedef struct statestruct{
 	int mispreds; /* Number of branch mispredictions*/
 } statetype;
 
-int bubbleInsertions = 0;
-int noopBubbleFlag = 0;
-int haltAppeared = 0;
-
 void printstate(statetype *stateptr);
 void printinstruction(int instr);
 int signExtend(int num);
@@ -85,24 +81,6 @@ int field0(int instruction);
 int field1(int instruction);
 int field2(int instruction);
 int opcode(int instruction);
-int isInstruction(int instruction);
-
-// Check if a value is an instruction
-int isInstruction(int instruction){
-	printf("instruction: %d\n", instruction);
-	int returnVal = 1;
-
-	// This will not work for an add 0 0 0s
-	// if (state.inst)
-	if (instruction == 0 || (opcode(instruction) != ADD && opcode(instruction) != NAND && opcode(instruction) != LW && opcode(instruction) != SW && 
-		opcode(instruction) != BEQ && opcode(instruction) != JALR && opcode(instruction) != HALT && opcode(instruction) != NOOP)){
-		returnVal = 0;
-
-	}
-	printf("returnVal: %d\n", returnVal);
-	return returnVal;
-}
-
 
 int field0(int instruction){
 	return( (instruction>>19) & 0x7);
@@ -302,7 +280,6 @@ ForwardUnit forwarding(statetype *state, statetype *newstate){
 	/////////////////////////////////////////////////////////////
 
 
-
 	/////////////////////////MEMWB////////////////////////////////
 
 	int regA_hazard_MEMWB = hasDataHazard(*state, 3, regA);
@@ -357,21 +334,12 @@ ForwardUnit forwarding(statetype *state, statetype *newstate){
 void fetchStage(statetype *state, statetype *newstate){
 	int instruction = state->instrmem[state->pc];
 
-	// Only increment pc and fetched if noopBubbleFlag is not 1
-
-	//set pc in newstate
 	newstate->pc = state->pc + 1;
-	//set fetched num in newstate
 	newstate->fetched = state->fetched + 1;
 
-	
 	//set instruction in IFID buffer in newstate
 	//fetching the new instruction
 	newstate->IFID.instr = instruction;
-
-	if(opcode(instruction) == HALT){
-		haltAppeared = 1;
-	}
 
 	//set pcplu1 in IFID buffer in newstate
 	newstate->IFID.pcplus1 = state->pc + 1;
@@ -407,12 +375,10 @@ void executeStage(statetype *state, statetype *newstate){
 	printf("unit.regBnewData: %d\n", unit.regBnewData);
 
 
-
 	instr = unit.instr;
 
 	if(unit.instr_change == 1){
-		noopBubbleFlag = 1;
-		bubbleInsertions = bubbleInsertions + 1;
+		newstate->retired = sate->retired - 1;
 
 		//set pc in newstate
 
@@ -460,12 +426,12 @@ void executeStage(statetype *state, statetype *newstate){
 		exit(0);
 	}
 
-
 	//set readreg in EXMEM buffer in newstate
 	newstate->EXMEM.readreg = regA_data;
 }
 
 void memoryStage(statetype *state, statetype *newstate){
+
 	// writeData defult value is 0
 	int writeData = 0;
 
@@ -647,7 +613,7 @@ int main(int argc, char** argv){
 			printf("total of %d instructions fetched\n", (state.fetched - 3));
 			// retired - the number of bubles inserted - the number of branch mispradictions * 2 for the 2 noop's loded per misprediciton
 			// -3 to acount for 3 stages of noting
-			printf("total of %d instructions retired\n", (state.retired - bubbleInsertions - (state.mispreds * 3) - 3));
+			printf("total of %d instructions retired\n", (state.retired - (state.mispreds * 3) - 3));
 			printf("total of %d branches executed\n", state.branches);
 			printf("total of %d branch mispredictions\n", state.mispreds);
 			exit(0);
@@ -684,4 +650,3 @@ int main(int argc, char** argv){
 							– AKA "Clock Tick". */
 	}
 }
-
