@@ -366,15 +366,6 @@ void executeStage(statetype *state, statetype *newstate){
 
 	ForwardUnit unit = forwarding(state, newstate);
 
-	printf("unit.instr: \n");
-	printinstruction(unit.instr);
-	printf("unit.instr_change: %d \n", unit.instr_change);
-	printf("unit.regAFlag: %d\n", unit.regAFlag);
-	printf("unit.regAnewData: %d\n", unit.regAnewData);
-	printf("unit.regBFlag: %d\n", unit.regBFlag);
-	printf("unit.regBnewData: %d\n", unit.regBnewData);
-
-
 	instr = unit.instr;
 
 	if(unit.instr_change == 1){
