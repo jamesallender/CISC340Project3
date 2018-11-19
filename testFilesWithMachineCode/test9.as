@@ -1,4 +1,4 @@
-	lw	1	0	mask	# load our inital bitmask int reg 1
+	lw	1	0	mask	# load our inital bitmask int reg 1 - - Test Multiplication asembly code from project 1
 	lw	2	0	mcand	# load Multiplicand into reg 2
 	lw	3	0	mplier	# load Multiplier into reg 3
 	lw	5	0	loops	# load 32 into loop register to check what loop were on

@@ -1,4 +1,4 @@
-		lw		1	0	a		# load 1 into reg 1 to be used for counting - # Test simple BEQ loop with hazards 
+		lw		1	0	a		# load 1 into reg 1 to be used for counting - # Test BEQ loop with hazards 
 		lw		2	0	b		# load 5 into reg 2 as the loop mac
 		add		3	0	0		# put 0 in reg 3 to initalize the the counter
 loop	add		3	3	1		# i++
