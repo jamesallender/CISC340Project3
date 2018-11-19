@@ -399,7 +399,7 @@ void executeStage(statetype *state, statetype *newstate){
 	//set for newstate
 	newstate->EXMEM.instr = instr;
 
-	if(instr == NOOP){
+	if(opcode(instr) == NOOP){
 		newstate->EXMEM.branchtarget = 0;
 	}else{
 		newstate->EXMEM.branchtarget = offset + state->IDEX.pcplus1;
