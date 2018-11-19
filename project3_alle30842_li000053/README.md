@@ -23,6 +23,6 @@ Test Files (./testFiles/):
 	test4.as: Simple LW, ADD, and SW test with hazards
 	test5.as: More complex LW, ADD, and SW test with hazards
 	test6.as: load reg 1 with 1 # Complex LW, SW test with hazards
-	test7.as: Test simple BEQ loop with hazards 
+	test7.as: Test BEQ loop with hazards 
 	test8.as: sSicificly test lw, add, lw following each other with hazards
-	test9.as: Test Multiplication asembly code from project 1
+	test9.as: Test Multiplication asembly code from project 1. Tests complicated looping with conditional inside of loop
